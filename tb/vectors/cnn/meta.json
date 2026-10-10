@@ -1,0 +1,40 @@
+{
+ "block": "cnn",
+ "note": "bobot ACAK (bukan terlatih)",
+ "layers": [
+  "conv1",
+  "conv2",
+  "conv3",
+  "fc1",
+  "fc2"
+ ],
+ "requant": [
+  [
+   28027,
+   22
+  ],
+  [
+   21188,
+   22
+  ],
+  [
+   22836,
+   23
+  ],
+  [
+   24826,
+   21
+  ],
+  [
+   23884,
+   16
+  ]
+ ],
+ "cases": [
+  "sine1k",
+  "noise3",
+  "noise100",
+  "impulse",
+  "cough"
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "block": "log_q",
+ "fft_w": 24,
+ "cases": [
+  "sine1k",
+  "noise3",
+  "noise100",
+  "impulse",
+  "cough"
+ ],
+ "calibration": "synthetic"
+}
