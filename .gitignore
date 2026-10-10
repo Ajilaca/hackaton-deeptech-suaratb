@@ -1,0 +1,74 @@
+CLAUDE.md
+SETUP.md
+scripts/
+
+# --- Data & hasil pelatihan (lisensi dataset) ---
+data/
+*.wav
+*.flac
+*.mp3
+*.ogg
+*.m4a
+*.npy
+*.npz
+*.pt
+*.pth
+*.onnx
+*.ckpt
+golden/out/
+model/out/
+runs/
+
+# --- Rahasia ---
+.env
+*.token
+kaggle.json
+.synapseConfig
+*.pem
+*.key
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Simulasi ---
+sim_build/
+obj_dir/
+results.xml
+*.vcd
+*.fst
+*.wlf
+*.ghw
+*.vvp
+
+# --- Vivado / Yosys / sintesis ---
+.Xil/
+*.jou
+*.log
+*.str
+*.backup.*
+*.runs/
+*.cache/
+*.hw/
+*.sim/
+*.ip_user_files/
+*.xpr
+*.bit
+*.bin
+target/**/build/
+target/**/work/
+*.json.gz
+
+# --- Alat konteks ---
+graphify-out/
+.obsidian/
+.claude/settings.local.json
+
+# --- Sistem ---
+.DS_Store
+*.swp
+*~
