@@ -4,6 +4,9 @@ scripts/
 
 # --- Data & hasil pelatihan (lisensi dataset) ---
 data/
+data/raw
+data/processed
+data/features
 *.wav
 *.flac
 *.mp3
@@ -17,6 +20,7 @@ data/
 *.ckpt
 golden/out/
 model/out/
+model/out
 runs/
 
 # --- Rahasia ---
@@ -60,6 +64,7 @@ results.xml
 *.bit
 *.bin
 target/**/build/
+target/build
 target/**/work/
 *.json.gz
 
