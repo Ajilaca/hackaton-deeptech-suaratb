@@ -203,3 +203,11 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   hasil lintas-dataset/perangkat; setiap klaim melewati 0,5 harus menyebut apakah CI mencakup 0,5 atau nol permutasi.
   Target 0,70/0,80 dihapus sebagai syarat lulus. Penurunan kuantisasi <= 0,02 dan HW vs golden bit-exact tetap.
 - Posisi alat: prioritas rujukan, bukan pengganti tes. Penguatan data (mis. CODA, K-15) = pasca-hackathon.
+
+## K-22 Clock inti 147,456 MHz untuk versi 150 MHz (2026-10-11)
+- Alasan: RTL `optimized` memenuhi timing 6,667 ns (150 MHz) di Vivado XC7A35T-1 untuk P = 8/16/32 (WNS +0,111 / +0,222 / +0,023 ns).
+  Clock inti yang dipakai di `target/` = 147,456 MHz = 144 x 1,024 MHz, sehingga BCLK I2S = clk/144 = 1,024 MHz dan fs tepat 16 kHz.
+- UART 115200 baud: CLK_PER_BIT = 147,456 MHz / 115200 = 1280 clk/bit (nilai pas). Menggantikan 98,304 MHz / 96 / 853 pada rencana awal.
+- Default parameter `suaratb_top` (CLK_PER_BCLK=96, CLK_PER_BIT=853) belum diubah; nilai K-22 diberikan lewat parameter dari `target/`.
+- Batas: baru hasil Vivado OOC (tanpa I/O dan MMCM); tidak ada klaim jalan di papan.
+
