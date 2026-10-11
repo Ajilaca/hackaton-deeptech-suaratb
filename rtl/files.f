@@ -9,3 +9,7 @@ rtl/audio/i2s_rx.sv
 rtl/audio/preemph.sv
 rtl/audio/frame_buf.sv
 rtl/detect/cough_det.sv
+// Fase 3: DSP
+rtl/dsp/window.sv
+rtl/dsp/fft512.sv
+rtl/dsp/power.sv
