@@ -18,3 +18,10 @@ rtl/dsp/log_q.sv
 rtl/dsp/quant.sv
 rtl/dsp/dsp_chain.sv
 rtl/dsp/feat_buf.sv
+// Fase 4: CNN
+rtl/cnn/cnn_cfg_pkg.sv
+rtl/cnn/pe_array.sv
+rtl/cnn/requant.sv
+rtl/cnn/gap.sv
+rtl/cnn/cnn_ctrl.sv
+rtl/cnn/cnn_top.sv
