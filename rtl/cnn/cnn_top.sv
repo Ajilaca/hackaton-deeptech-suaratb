@@ -56,10 +56,16 @@ module cnn_top #(
 
   logic [15:0] rq_mem [0:2*NL-1];
   initial $readmemh(INIT_RQ, rq_mem);
-  wire [15:0] rq_m0    = rq_mem[{layer, 1'b0}];
-  wire [4:0]  rq_shift = rq_mem[{layer, 1'b1}][4:0];
-  wire        rq_final = (cfg_final(int'(layer)) != 0);
-  wire        rq_dst_b = (cfg_dst_b(int'(layer)) != 0);
+  // konfigurasi layer didaftarkan (tetap selama satu layer; layer berubah >= 1 siklus sebelum token pertama)
+  logic [15:0] rq_m0;
+  logic [4:0]  rq_shift;
+  logic        rq_final, rq_dst_b;
+  always_ff @(posedge clk) begin
+    rq_m0    <= rq_mem[{layer, 1'b0}];
+    rq_shift <= rq_mem[{layer, 1'b1}][4:0];
+    rq_final <= (cfg_final(int'(layer)) != 0);
+    rq_dst_b <= (cfg_dst_b(int'(layer)) != 0);
+  end
 
   // ---- buffer A/B ---------------------------------------------------------------------------------------
   logic              gap_rd_en, gap_we;

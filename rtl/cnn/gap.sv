@@ -3,7 +3,7 @@
 //             kanal, menulis CH hasil int8 ke buffer tujuan alamat c.
 // Parameter : CH, HW, RECIP (round(2^FRAC/HW)), FRAC, AW
 // Antarmuka : start -> rd_en/rd_addr, rd_data (valid 1 siklus setelah rd_en) -> we/waddr/wdata, done
-// Latensi   : CH*HW + ~4 siklus
+// Latensi   : CH*HW + ~5 siklus
 // Golden    : golden/blocks/cnn.py : gap(x)
 module gap #(
   parameter int CH    = cnn_cfg_pkg::GAP_CH,
@@ -30,10 +30,16 @@ module gap #(
 
   logic          v1, first1, last1;
   logic [7:0]    ch1;
-  logic signed [31:0] sum;
+  localparam int SW = 8 + $clog2(HW) + 2;     // lebar jumlah: 8 bit + log2(HW) + margin
+  logic signed [SW-1:0] sum;
+  logic signed [SW-1:0] sum_f;               // jumlah kanal (didaftarkan sebelum dikali RECIP)
+  logic          vf;
+  logic          last_chf;
+  logic [7:0]    chf;
+  logic          last_allf;
   logic          v2, last_ch2;
   logic [7:0]    ch2;
-  logic signed [47:0] prod2;
+  logic signed [SW+11-1:0] prod2;
   logic          v3, last_all3;
   logic [7:0]    ch3;
   logic          last_all1, last_all2;
@@ -41,11 +47,11 @@ module gap #(
   assign rd_en   = run;
   assign rd_addr = n_cnt;
 
-  wire signed [31:0] s_next = (first1 ? 32'sd0 : sum) + {{24{rd_data[7]}}, rd_data};
+  wire signed [SW-1:0] s_next = (first1 ? '0 : sum) + SW'($signed(rd_data));
 
   always_ff @(posedge clk) begin
     if (!rst_n) begin
-      run <= 1'b0; v1 <= 1'b0; v2 <= 1'b0; v3 <= 1'b0; we <= 1'b0; done <= 1'b0;
+      run <= 1'b0; v1 <= 1'b0; vf <= 1'b0; v2 <= 1'b0; v3 <= 1'b0; we <= 1'b0; done <= 1'b0;
       n_cnt <= '0; i_cnt <= '0; ch_cnt <= '0;
     end else begin
       we   <= 1'b0;
@@ -68,23 +74,31 @@ module gap #(
       last1     <= (i_cnt == 8'(HW - 1));
       last_all1 <= (i_cnt == 8'(HW - 1)) && (ch_cnt == 8'(CH - 1));
       ch1       <= ch_cnt;
-      // tahap 2: jumlah, lalu kali RECIP saat kanal selesai
-      v2 <= 1'b0;
+      // tahap 2: jumlah; saat kanal selesai, jumlah didaftarkan (sum_f)
+      vf <= 1'b0;
       if (v1) begin
         sum <= s_next;
         if (last1) begin
-          v2        <= 1'b1;
-          prod2     <= s_next * RECIP;
-          ch2       <= ch1;
-          last_all2 <= last_all1;
+          vf        <= 1'b1;
+          sum_f     <= s_next;
+          chf       <= ch1;
+          last_allf <= last_all1;
         end
+      end
+      // tahap 2b: kali RECIP
+      v2 <= 1'b0;
+      if (vf) begin
+        v2        <= 1'b1;
+        prod2     <= sum_f * RECIP;
+        ch2       <= chf;
+        last_all2 <= last_allf;
       end
       // tahap 3: pembulatan
       v3 <= v2;
       if (v2) begin
         ch3       <= ch2;
         last_all3 <= last_all2;
-        wdata     <= 8'((prod2 + (48'sd1 <<< (FRAC - 1))) >>> FRAC);
+        wdata     <= 8'((prod2 + (FRAC > 0 ? (1 <<< (FRAC - 1)) : 0)) >>> FRAC);
       end
       // tahap 4: tulis
       if (v3) begin
