@@ -98,17 +98,20 @@ module fft512 #(
   // t+1 : rdata=a, tw valid -> a_q, tw_q ; raddr=b
   // t+2 : rdata=b            -> produk (4 pengali)
   // t+3 : produk valid       -> tr, ti
-  // t+4 : tr,ti valid        -> a', b' (bulatkan, saturasi)
+  // t+4 : tr,ti valid        -> a', b' (bulatkan, saturasi); sat_inc
   // t+5 : a' ditulis ; t+6 : b' ditulis
   logic                      v1, v2, v3, v4, v5, v6;
   logic [AW-1:0]             ia1, ia2, ia3, ia4, ia5;
   logic [AW-1:0]             ib1, ib2, ib3, ib4, ib5, ib6;
-  logic signed [W-1:0]       ar_q, ai_q, ar_d, ai_d, ar_dd, ai_dd;
+  logic signed [W-1:0]       ar_q, ai_q, ar_d, ai_d;
   logic signed [TW_W-1:0]    c_q, s_q;
   logic signed [PW-1:0]      p_brc, p_bis, p_brs, p_bic;
   logic signed [AW_SUM-1:0]  tr_q, ti_q;
   logic signed [W-1:0]       oar, oai, obr, obi;
   logic signed [W-1:0]       obr2, obi2;
+  logic signed [AW_SUM-1:0]  ar_base, ai_base;      // a*2^15 + rnd (dihitung satu tahap lebih awal, memperpendek jalur kritis)
+  logic                      ss_q;                  // bit geser stage untuk tahap t+4
+  logic [2:0]                sat_inc;               // jumlah saturasi butterfly ini (0..4), ditambahkan ke sat_cnt di t+5
   logic [31:0]               sat_cnt;
 
   wire signed [W-1:0] b_re = ram_rdata[W-1:0];
@@ -116,20 +119,20 @@ module fft512 #(
   wire signed [W-1:0] a_re = ram_rdata[W-1:0];
   wire signed [W-1:0] a_im = ram_rdata[2*W-1:W];
 
-  // pembulatan/saturasi tahap t+4
+  // pembulatan/saturasi tahap t+4. sh hanya 15 atau 16: pemilih 2:1, bukan penggeser variabel.
+  // a*2^15 + rnd sudah dihitung di t+3 (ar_base/ai_base); di sini tinggal satu penjumlah per keluaran.
   wire         ss_bit  = STAGE_MASK[st];
-  wire [4:0]   sh      = 5'd15 + {4'd0, ss_bit};
-  wire signed [AW_SUM-1:0] rnd = (AW_SUM'(1) <<< (sh - 5'd1));
-  wire signed [AW_SUM-1:0] ar15 = (AW_SUM'(ar_dd) <<< 15);
-  wire signed [AW_SUM-1:0] ai15 = (AW_SUM'(ai_dd) <<< 15);
-  wire signed [AW_SUM-1:0] sum_ar = ar15 + tr_q + rnd;
-  wire signed [AW_SUM-1:0] sum_br = ar15 - tr_q + rnd;
-  wire signed [AW_SUM-1:0] sum_ai = ai15 + ti_q + rnd;
-  wire signed [AW_SUM-1:0] sum_bi = ai15 - ti_q + rnd;
-  wire signed [AW_SUM-1:0] q_ar = sum_ar >>> sh;
-  wire signed [AW_SUM-1:0] q_br = sum_br >>> sh;
-  wire signed [AW_SUM-1:0] q_ai = sum_ai >>> sh;
-  wire signed [AW_SUM-1:0] q_bi = sum_bi >>> sh;
+  wire signed [AW_SUM-1:0] rnd  = ss_bit ? (AW_SUM'(1) <<< 15) : (AW_SUM'(1) <<< 14);
+  wire signed [AW_SUM-1:0] ar15 = (AW_SUM'(ar_d) <<< 15);
+  wire signed [AW_SUM-1:0] ai15 = (AW_SUM'(ai_d) <<< 15);
+  wire signed [AW_SUM-1:0] sum_ar = ar_base + tr_q;
+  wire signed [AW_SUM-1:0] sum_br = ar_base - tr_q;
+  wire signed [AW_SUM-1:0] sum_ai = ai_base + ti_q;
+  wire signed [AW_SUM-1:0] sum_bi = ai_base - ti_q;
+  wire signed [AW_SUM-1:0] q_ar = ss_q ? (sum_ar >>> 16) : (sum_ar >>> 15);
+  wire signed [AW_SUM-1:0] q_br = ss_q ? (sum_br >>> 16) : (sum_br >>> 15);
+  wire signed [AW_SUM-1:0] q_ai = ss_q ? (sum_ai >>> 16) : (sum_ai >>> 15);
+  wire signed [AW_SUM-1:0] q_bi = ss_q ? (sum_bi >>> 16) : (sum_bi >>> 15);
   localparam logic signed [AW_SUM-1:0] MAXW = (AW_SUM'(1) <<< (W - 1)) - 1;
   localparam logic signed [AW_SUM-1:0] MINW = -(AW_SUM'(1) <<< (W - 1));
   wire sat_ar = (q_ar > MAXW) || (q_ar < MINW);
@@ -223,8 +226,8 @@ module fft512 #(
         default: state <= S_LOAD;
       endcase
 
-      // hitung saturasi pada tahap t+4 (v4)
-      if (v4) sat_cnt <= sat_cnt + 32'(sat_ar) + 32'(sat_br) + 32'(sat_ai) + 32'(sat_bi);
+      // saturasi: dihitung di t+4 (sat_inc), ditambahkan ke penghitung di t+5 (v5)
+      if (v5) sat_cnt <= sat_cnt + 32'(sat_inc);
     end
   end
 
@@ -308,10 +311,11 @@ module fft512 #(
     end
     // t+3: tr = br*cos + bi*sin ; ti = bi*cos - br*sin
     if (v3) begin
-      tr_q  <= AW_SUM'(p_brc) + AW_SUM'(p_bis);
-      ti_q  <= AW_SUM'(p_bic) - AW_SUM'(p_brs);
-      ar_dd <= ar_d;
-      ai_dd <= ai_d;
+      tr_q    <= AW_SUM'(p_brc) + AW_SUM'(p_bis);
+      ti_q    <= AW_SUM'(p_bic) - AW_SUM'(p_brs);
+      ar_base <= ar15 + rnd;
+      ai_base <= ai15 + rnd;
+      ss_q    <= ss_bit;
     end
     // t+4: bulatkan + saturasi
     if (v4) begin
@@ -319,6 +323,7 @@ module fft512 #(
       oai <= clampw(q_ai);
       obr <= clampw(q_br);
       obi <= clampw(q_bi);
+      sat_inc <= 3'(sat_ar) + 3'(sat_br) + 3'(sat_ai) + 3'(sat_bi);
     end
     // t+5: simpan b' untuk ditulis di t+6
     if (v5) begin
