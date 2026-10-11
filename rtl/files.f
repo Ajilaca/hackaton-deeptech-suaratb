@@ -13,3 +13,8 @@ rtl/detect/cough_det.sv
 rtl/dsp/window.sv
 rtl/dsp/fft512.sv
 rtl/dsp/power.sv
+rtl/dsp/mel.sv
+rtl/dsp/log_q.sv
+rtl/dsp/quant.sv
+rtl/dsp/dsp_chain.sv
+rtl/dsp/feat_buf.sv
