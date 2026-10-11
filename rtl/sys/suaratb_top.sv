@@ -67,7 +67,8 @@ module suaratb_top #(
       else if (clr_cnt != 0) clr_cnt <= clr_cnt - 3'd1;
     end
   end
-  wire core_rst_n = rst_n && (clr_cnt == 0);
+  logic core_rst_n;                                      // terdaftar: jaringan reset fanout tinggi tidak di jalur kritis
+  always_ff @(posedge clk) core_rst_n <= rst_n && (clr_cnt == 3'd0) && !(ds_start || clear_pulse || (mode_mic != mode_q));
 
 
   // ---- sumber sampel -------------------------------------------------------------------------------
