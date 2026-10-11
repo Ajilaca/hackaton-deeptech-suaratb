@@ -1,22 +1,22 @@
 // fft512: FFT 512 titik radix-2 DIT, masukan real (bagian imajiner nol), 1 butterfly, RAM in-place,
 //         data W bit bertanda, twiddle Q1.15, skala 1/2 per stage (FFT_STAGE_SHIFT_MASK).
 // Fungsi    : LOAD   : 512 sampel masukan berurutan ditulis ke alamat bit-reversed (re=sampel, im=0).
-//             COMPUTE: 9 stage x 256 butterfly; tiap butterfly 2 siklus (baca a, baca b), alur 5 tahap, tulis a' lalu b'.
+//             COMPUTE: 9 stage x 256 butterfly; tiap butterfly 2 siklus (baca a, baca b), alur 7 tahap, tulis a' lalu b'.
 //                      t = b*W (W = cos - j sin), a' = (a*2^15 + t + 2^(s+14)) >>> (15+s), b' = (a*2^15 - t + ...) >>> ...,
 //                      s = bit stage ke-st dari FFT_STAGE_SHIFT_MASK; hasil disaturasi ke W bit (n_sat menghitung saturasi).
 //             OUTPUT : bin 0..256 (re, im) berurutan tiap OUT_GAP siklus, lalu done.
-// Parameter : W, TW_W (16), NFFT (512), STAGE_MASK, DRAIN (siklus kosong antar-stage, >= 8), OUT_GAP (>= 3, default 4),
+// Parameter : W, TW_W (16), NFFT (512), STAGE_MASK, DRAIN (siklus kosong antar-stage, >= 10), OUT_GAP (>= 3, default 4),
 //             INIT_COS, INIT_SIN (ROM twiddle 256 x 16 bit, golden/tables)
 // Antarmuka : in_valid/in_data/in_first (512 sampel berurutan; hanya diterima saat in_ready=1)
 //             -> out_valid/out_re/out_im/out_idx/out_last, done (1 siklus setelah bin 256), n_sat (valid saat done)
-// Latensi   : 512 (muat) + ~2*2304 + 9*DRAIN + 257*OUT_GAP siklus ~ 6,2 rb siklus pada DRAIN=8, OUT_GAP=4 (analitik)
+// Latensi   : 512 (muat) + ~2*2304 + 9*DRAIN + 257*OUT_GAP siklus ~ 6,3 rb siklus pada DRAIN=10, OUT_GAP=4 (analitik)
 // Golden    : golden/blocks/fft512.py : fft512(xr, W, stage_shift) (keluaran urutan alami, n_sat)
 module fft512 #(
   parameter int W          = suaratb_pkg::FFT_W,
   parameter int TW_W       = 16,
   parameter int NFFT       = suaratb_pkg::NFFT,
   parameter int STAGE_MASK = suaratb_pkg::FFT_STAGE_SHIFT_MASK,
-  parameter int DRAIN      = 8,
+  parameter int DRAIN      = 10,
   parameter int OUT_GAP    = 4,
   parameter INIT_COS = "rtl/mem/twiddle_cos.mem",
   parameter INIT_SIN = "rtl/mem/twiddle_sin.mem"
@@ -100,11 +100,12 @@ module fft512 #(
   // t+3 : produk valid       -> tr, ti
   // t+4 : tr,ti valid        -> a', b' (bulatkan, saturasi); sat_inc
   // t+5 : a' ditulis ; t+6 : b' ditulis
-  logic                      v1, v2, v3, v4, v5, v6;
-  logic [AW-1:0]             ia1, ia2, ia3, ia4, ia5;
-  logic [AW-1:0]             ib1, ib2, ib3, ib4, ib5, ib6;
+  logic                      v1, v2, v2q, v3, v4, v5, v6, v7;
+  logic [AW-1:0]             ia1, ia2, ia2q, ia3, ia4, ia5, ia6;
+  logic [AW-1:0]             ib1, ib2, ib2q, ib3, ib4, ib5, ib6, ib7;
   logic signed [W-1:0]       ar_q, ai_q, ar_d, ai_d;
   logic signed [TW_W-1:0]    c_q, s_q;
+  logic signed [W-1:0]       br_q, bi_q;          // b didaftarkan sebelum pengali (memutus BRAM -> DSP)
   logic signed [PW-1:0]      p_brc, p_bis, p_brs, p_bic;
   logic signed [AW_SUM-1:0]  tr_q, ti_q;
   logic signed [W-1:0]       oar, oai, obr, obi;
@@ -125,14 +126,16 @@ module fft512 #(
   wire signed [AW_SUM-1:0] rnd  = ss_bit ? (AW_SUM'(1) <<< 15) : (AW_SUM'(1) <<< 14);
   wire signed [AW_SUM-1:0] ar15 = (AW_SUM'(ar_d) <<< 15);
   wire signed [AW_SUM-1:0] ai15 = (AW_SUM'(ai_d) <<< 15);
-  wire signed [AW_SUM-1:0] sum_ar = ar_base + tr_q;
-  wire signed [AW_SUM-1:0] sum_br = ar_base - tr_q;
-  wire signed [AW_SUM-1:0] sum_ai = ai_base + ti_q;
-  wire signed [AW_SUM-1:0] sum_bi = ai_base - ti_q;
-  wire signed [AW_SUM-1:0] q_ar = ss_q ? (sum_ar >>> 16) : (sum_ar >>> 15);
-  wire signed [AW_SUM-1:0] q_br = ss_q ? (sum_br >>> 16) : (sum_br >>> 15);
-  wire signed [AW_SUM-1:0] q_ai = ss_q ? (sum_ai >>> 16) : (sum_ai >>> 15);
-  wire signed [AW_SUM-1:0] q_bi = ss_q ? (sum_bi >>> 16) : (sum_bi >>> 15);
+  wire signed [AW_SUM-1:0] sum_ar_c = ar_base + tr_q;
+  wire signed [AW_SUM-1:0] sum_br_c = ar_base - tr_q;
+  wire signed [AW_SUM-1:0] sum_ai_c = ai_base + ti_q;
+  wire signed [AW_SUM-1:0] sum_bi_c = ai_base - ti_q;
+  logic signed [AW_SUM-1:0] sum_ar, sum_br, sum_ai, sum_bi;   // jumlah didaftarkan (tahap v4)
+  logic                     ss_q2;
+  wire signed [AW_SUM-1:0] q_ar = ss_q2 ? (sum_ar >>> 16) : (sum_ar >>> 15);
+  wire signed [AW_SUM-1:0] q_br = ss_q2 ? (sum_br >>> 16) : (sum_br >>> 15);
+  wire signed [AW_SUM-1:0] q_ai = ss_q2 ? (sum_ai >>> 16) : (sum_ai >>> 15);
+  wire signed [AW_SUM-1:0] q_bi = ss_q2 ? (sum_bi >>> 16) : (sum_bi >>> 15);
   localparam logic signed [AW_SUM-1:0] MAXW = (AW_SUM'(1) <<< (W - 1)) - 1;
   localparam logic signed [AW_SUM-1:0] MINW = -(AW_SUM'(1) <<< (W - 1));
   wire sat_ar = (q_ar > MAXW) || (q_ar < MINW);
@@ -227,13 +230,13 @@ module fft512 #(
       endcase
 
       // saturasi: dihitung di t+4 (sat_inc), ditambahkan ke penghitung di t+5 (v5)
-      if (v5) sat_cnt <= sat_cnt + 32'(sat_inc);
+      if (v6) sat_cnt <= sat_cnt + 32'(sat_inc);
     end
   end
 
   // ---- RAM write mux: LOAD / butterfly / (tidak ada tulis saat OUTPUT) -------------------------------
-  wire wr_a = v5;                                   // t+5: tulis a'
-  wire wr_b = v6;                                   // t+6: tulis b'
+  wire wr_a = v6;                                   // tulis a'
+  wire wr_b = v7;                                   // tulis b'
   always_comb begin
     ram_we    = 1'b0;
     ram_waddr = '0;
@@ -244,11 +247,11 @@ module fft512 #(
       ram_wdata = {{W{1'b0}}, in_data};
     end else if (wr_a) begin
       ram_we    = 1'b1;
-      ram_waddr = ia5;
+      ram_waddr = ia6;
       ram_wdata = {oai, oar};
     end else if (wr_b) begin
       ram_we    = 1'b1;
-      ram_waddr = ib6;
+      ram_waddr = ib7;
       ram_wdata = {obi2, obr2};
     end
   end
@@ -274,14 +277,16 @@ module fft512 #(
   // ---- pipeline butterfly -----------------------------------------------------------------------------
   always_ff @(posedge clk) begin
     if (!rst_n) begin
-      v1 <= 1'b0; v2 <= 1'b0; v3 <= 1'b0; v4 <= 1'b0; v5 <= 1'b0; v6 <= 1'b0;
+      v1 <= 1'b0; v2 <= 1'b0; v2q <= 1'b0; v3 <= 1'b0; v4 <= 1'b0; v5 <= 1'b0; v6 <= 1'b0; v7 <= 1'b0;
     end else begin
       v1 <= issue0;
       v2 <= v1;
-      v3 <= v2;
+      v2q <= v2;
+      v3 <= v2q;
       v4 <= v3;
       v5 <= v4;
       v6 <= v5;
+      v7 <= v6;
     end
   end
 
@@ -289,10 +294,12 @@ module fft512 #(
     // alamat dibawa sepanjang alur
     ia1 <= idx_a;  ib1 <= idx_b;
     ia2 <= ia1;    ib2 <= ib1;
-    ia3 <= ia2;    ib3 <= ib2;
+    ia2q <= ia2;   ib2q <= ib2;
+    ia3 <= ia2q;   ib3 <= ib2q;
     ia4 <= ia3;    ib4 <= ib3;
     ia5 <= ia4;    ib5 <= ib4;
-    ib6 <= ib5;
+    ia6 <= ia5;    ib6 <= ib5;
+    ib7 <= ib6;
     // t+1: a dan twiddle ditangkap
     if (v1) begin
       ar_q <= a_re;
@@ -300,16 +307,21 @@ module fft512 #(
       c_q  <= tw_cos_u;
       s_q  <= tw_sin_u;
     end
-    // t+2: b tersedia di rdata -> produk
+    // t+2: b tersedia di rdata -> didaftarkan
     if (v2) begin
-      p_brc <= b_re * c_q;
-      p_bis <= b_im * s_q;
-      p_brs <= b_re * s_q;
-      p_bic <= b_im * c_q;
-      ar_d  <= ar_q;
-      ai_d  <= ai_q;
+      br_q <= b_re;
+      bi_q <= b_im;
+      ar_d <= ar_q;
+      ai_d <= ai_q;
     end
-    // t+3: tr = br*cos + bi*sin ; ti = bi*cos - br*sin
+    // t+3: produk (br_q/bi_q dan c_q/s_q stabil; twiddle butterfly berikutnya baru ditangkap 1 siklus kemudian)
+    if (v2q) begin
+      p_brc <= br_q * c_q;
+      p_bis <= bi_q * s_q;
+      p_brs <= br_q * s_q;
+      p_bic <= bi_q * c_q;
+    end
+    // t+4: tr = br*cos + bi*sin ; ti = bi*cos - br*sin
     if (v3) begin
       tr_q    <= AW_SUM'(p_brc) + AW_SUM'(p_bis);
       ti_q    <= AW_SUM'(p_bic) - AW_SUM'(p_brs);
@@ -317,16 +329,24 @@ module fft512 #(
       ai_base <= ai15 + rnd;
       ss_q    <= ss_bit;
     end
-    // t+4: bulatkan + saturasi
+    // t+5: jumlah a*2^15 + rnd +/- t didaftarkan
     if (v4) begin
+      sum_ar <= sum_ar_c;
+      sum_br <= sum_br_c;
+      sum_ai <= sum_ai_c;
+      sum_bi <= sum_bi_c;
+      ss_q2  <= ss_q;
+    end
+    // t+6: geser (pemilih 2:1), saturasi, hitung saturasi
+    if (v5) begin
       oar <= clampw(q_ar);
       oai <= clampw(q_ai);
       obr <= clampw(q_br);
       obi <= clampw(q_bi);
       sat_inc <= 3'(sat_ar) + 3'(sat_br) + 3'(sat_ai) + 3'(sat_bi);
     end
-    // t+5: simpan b' untuk ditulis di t+6
-    if (v5) begin
+    // t+7: simpan b' untuk ditulis di t+8
+    if (v6) begin
       obr2 <= obr;
       obi2 <= obi;
     end
@@ -353,7 +373,7 @@ module fft512 #(
 
 `ifndef SYNTHESIS
   initial begin
-    if (DRAIN < 8)   $error("fft512: DRAIN=%0d < 8", DRAIN);
+    if (DRAIN < 10)  $error("fft512: DRAIN=%0d < 10", DRAIN);
     if (OUT_GAP < 3) $error("fft512: OUT_GAP=%0d < 3", OUT_GAP);
   end
   always_ff @(posedge clk) begin

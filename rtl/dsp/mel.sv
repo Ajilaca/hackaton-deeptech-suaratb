@@ -6,7 +6,8 @@
 // Parameter : P_W (2W), ACC_W (MEL_ACC_BITS), OUT_BITS (LOG_IN_BITS), MEL_SHIFT, N_MEL, DEPTH (kata ROM), INIT_FILE
 // Antarmuka : in_valid/in_p/in_first/in_last (bin berurutan; jarak antar bin >= 3 siklus)
 //             -> out_valid/out_e/out_idx/out_last (40 keluaran berurutan)
-// Latensi   : 2-3 siklus per bin; keluaran dimulai ~4 siklus setelah bin terakhir
+// Latensi   : 2-3 siklus per bin; keluaran dimulai ~7 siklus setelah bin terakhir (bobot didaftarkan, kali dua tahap,
+//             baca acc, tambah, keluaran terdaftar)
 // Golden    : golden/blocks/mel.py : mel_energy(p, shift, in_bits)
 module mel #(
   parameter int    P_W       = 2 * suaratb_pkg::FFT_W,
@@ -55,7 +56,18 @@ module mel #(
   logic             m_valid;                          // produk valid (tahap kali)
   logic [MW-1:0]    m_prod;
   logic [5:0]       m_band;
-  logic             fin1, fin2;                        // bin terakhir: tandai akhir frame
+  logic             wq_valid, mp_valid;               // bobot didaftarkan; produk tahap pertama
+  logic [W_FRAC-1:0] wq;
+  logic [5:0]       wq_band, mp_band;
+  logic [MW-1:0]    mp0;
+  logic             m1_valid;                         // tahap berikutnya: acc dibaca di tahap kali, ditambah di sini
+  logic [MW-1:0]    m1_prod;
+  logic [5:0]       m1_band;
+  logic [ACC_W-1:0] acc_rd;                           // nilai acc[band] terbaca
+  logic             o_v1, o_v2, o_last1;
+  logic [5:0]       o_idx1;
+  logic [ACC_W-1:0] o_acc1;
+  logic             fin1, fin2, fin3, fin4;            // bin terakhir: tandai akhir frame
   logic             out_run;
   logic [5:0]       o_cnt;
 
@@ -78,17 +90,26 @@ module mel #(
       m_valid   <= 1'b0;
       fin1      <= 1'b0;
       fin2      <= 1'b0;
+      m1_valid  <= 1'b0;
+      wq_valid  <= 1'b0;
+      mp_valid  <= 1'b0;
+      fin3      <= 1'b0;
+      fin4      <= 1'b0;
+      o_v1      <= 1'b0;
+      o_v2      <= 1'b0;
       out_run   <= 1'b0;
       o_cnt     <= '0;
       out_valid <= 1'b0;
       out_last  <= 1'b0;
       for (int b = 0; b < N_MEL; b++) acc[b] <= '0;
     end else begin
-      m_valid   <= 1'b0;
+      wq_valid  <= 1'b0;
       fin1      <= 1'b0;
       out_valid <= 1'b0;
       out_last  <= 1'b0;
       fin2      <= fin1;
+      fin3      <= fin2;
+      fin4      <= fin3;
 
       case (state)
         S_IDLE: begin
@@ -100,10 +121,10 @@ module mel #(
           end
         end
         S_WORD: begin
-          // rom_word valid: kata untuk bin ini
-          m_valid <= 1'b1;
-          m_prod  <= p_hold * w_val;
-          m_band  <= w_band;
+          // rom_word valid: kata untuk bin ini; bobot dan band didaftarkan, produk di tahap berikutnya
+          wq_valid <= 1'b1;
+          wq       <= w_val;
+          wq_band  <= w_band;
           if (w_eob) begin
             fin1  <= last_hold;
             state <= S_IDLE;
@@ -114,23 +135,48 @@ module mel #(
         default: state <= S_IDLE;
       endcase
 
-      // akumulasi (tahap setelah kali)
-      if (m_valid) acc[m_band] <= acc[m_band] + ACC_W'(m_prod);
+      // kali dua tahap: mp0 (DSP) lalu m_prod
+      mp_valid <= wq_valid;
+      if (wq_valid) begin
+        mp0     <= p_hold * wq;
+        mp_band <= wq_band;
+      end
+      m_valid <= mp_valid;
+      if (mp_valid) begin
+        m_prod <= mp0;
+        m_band <= mp_band;
+      end
 
-      // keluaran: mulai setelah akumulasi kata terakhir selesai
-      if (fin2 && !out_run) begin
+      // akumulasi: tahap A = baca acc[band] (mux 40:1) ; tahap B = tambah + tulis. Kata berurutan dengan band sama
+      // berjarak >= 2 siklus sehingga tulis tahap B selesai sebelum baca tahap A kata berikutnya.
+      m1_valid <= m_valid;
+      if (m_valid) begin
+        m1_prod <= m_prod;
+        m1_band <= m_band;
+        acc_rd  <= acc[m_band];
+      end
+      if (m1_valid) acc[m1_band] <= acc_rd + ACC_W'(m1_prod);
+
+      // keluaran: mulai setelah akumulasi kata terakhir selesai (tulis acc terakhir terjadi 1 siklus lebih lambat; terbaca tepat waktu)
+      if (fin4 && !out_run) begin
         out_run <= 1'b1;
         o_cnt   <= '0;
       end
+      o_v1 <= 1'b0;
       if (out_run) begin
-        out_valid <= 1'b1;
-        out_idx   <= o_cnt;
-        out_last  <= (o_cnt == 6'(N_MEL - 1));
-        out_e     <= sat_out(acc[o_cnt]);
+        o_v1    <= 1'b1;
+        o_idx1  <= o_cnt;
+        o_last1 <= (o_cnt == 6'(N_MEL - 1));
+        o_acc1  <= acc[o_cnt];
         acc[o_cnt] <= '0;
         if (o_cnt == 6'(N_MEL - 1)) out_run <= 1'b0;
         else                        o_cnt <= o_cnt + 6'd1;
       end
+      o_v2      <= o_v1;
+      out_valid <= o_v1;
+      out_idx   <= o_idx1;
+      out_last  <= o_v1 && o_last1;
+      out_e     <= sat_out(o_acc1);
     end
   end
 

@@ -6,7 +6,7 @@
 // Parameter : W, IN_FRAC (bit pecahan masukan = PREEMPH_FRAC), WIN_FRAC, FRAME_LEN, NFFT, INIT_FILE
 // Antarmuka : in_valid/in_data/in_first (masukan 16+IN_FRAC bit, stream berurutan tanpa celah 400 sampel)
 //             -> out_valid/out_data/out_first/out_last (512 sampel berurutan, out_last pada n = 511)
-// Latensi   : 3 siklus (sampel pertama); nol-pad menyusul tanpa celah. Frame berikutnya tidak boleh tiba
+// Latensi   : 4 siklus (sampel pertama); nol-pad menyusul tanpa celah. Frame berikutnya tidak boleh tiba
 //             sebelum 512 keluaran selesai (frame_buf: jarak frame = 160 sampel audio >> 512 siklus).
 // Golden    : golden/blocks/window.py : apply_window(frames, W, in_frac)
 module window #(
@@ -89,13 +89,29 @@ module window #(
     end
   end
 
-  // ---- tahap 3: pembulatan + saturasi; nol-pad setelah sampel ke-400 ---------------------------------
+  // ---- tahap 3: pembulatan (tambah setengah + geser) ---------------------------------------------------
   localparam int EW = PW + 1;
   wire signed [EW-1:0] prod_e = EW'(s2_prod);
   wire signed [EW-1:0] rnd_v  = (prod_e + (EW'(1) <<< (SH - 1))) >>> SH;
   localparam logic signed [EW-1:0] MAXW = (EW'(1) <<< (W - 1)) - 1;
   localparam logic signed [EW-1:0] MINW = -(EW'(1) <<< (W - 1));
 
+  logic                  s3_valid, s3_first, s3_last;
+  logic signed [EW-1:0]  s3_rnd;
+  always_ff @(posedge clk) begin
+    if (!rst_n) begin
+      s3_valid <= 1'b0;
+    end else begin
+      s3_valid <= s2_valid;
+      if (s2_valid) begin
+        s3_rnd   <= rnd_v;
+        s3_first <= s2_first;
+        s3_last  <= s2_last;
+      end
+    end
+  end
+
+  // ---- tahap 4: saturasi; nol-pad setelah sampel ke-400 --------------------------------------------------
   logic        pad_active;
   logic [7:0]  pad_cnt;
 
@@ -110,11 +126,11 @@ module window #(
       out_valid <= 1'b0;
       out_first <= 1'b0;
       out_last  <= 1'b0;
-      if (s2_valid) begin
+      if (s3_valid) begin
         out_valid <= 1'b1;
-        out_first <= s2_first;
-        out_data  <= (rnd_v > MAXW) ? MAXW[W-1:0] : (rnd_v < MINW) ? MINW[W-1:0] : rnd_v[W-1:0];
-        if (s2_last) begin
+        out_first <= s3_first;
+        out_data  <= (s3_rnd > MAXW) ? MAXW[W-1:0] : (s3_rnd < MINW) ? MINW[W-1:0] : s3_rnd[W-1:0];
+        if (s3_last) begin
           pad_active <= 1'b1;
           pad_cnt    <= '0;
         end
