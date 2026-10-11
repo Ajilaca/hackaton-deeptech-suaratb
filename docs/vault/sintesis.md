@@ -1,11 +1,11 @@
-# Sintesis (Fase 6)
+# Sintesis (Fase 6 dan versi 150 MHz)
 
 Satu-satunya dokumen hasil sintesis. Angka berasal dari laporan alat (Vivado 2026.1 dan Yosys 0.33, 2026-10-11); yang
 dihitung dari angka lain diberi label.
 
 ## Metode
 - Referensi: Vivado 2026.1, **XC7A35T-1** (`xc7a35tcpg236-1`), `synth_design -mode out_of_context`, lalu `opt_design`,
-  `place_design`, `route_design`. Clock 10 ns (100 MHz) pada port `clk`; **tanpa constraint I/O dan tanpa MMCM** (tidak ada pin).
+  `place_design`, `route_design`. Clock 10 ns (100 MHz) dan 6,667 ns (150 MHz) pada port `clk`; **tanpa constraint I/O dan tanpa MMCM** (tidak ada pin).
   Timing = jalur register ke register dalam inti.
 - Model: bobot terlatih `model_v2` (ROM isi nyata), P = 8 / 16 / 32 (paket konfigurasi dibangkitkan dari `golden/gen_cnn_rom.py`).
 - Yosys: `synth_xilinx -family xc7` setelah `sv2v` (Yosys 0.33 tidak membaca `import pkg::*` dan `return` dalam fungsi); tanpa
@@ -36,7 +36,7 @@ Fmax (satu jalankan per titik; perkiraan konservatif 1 / (T - WNS), T = constrai
 | 16 | 6,67 ns | -2,658 ns | 9,33 ns | ≈ 107,2 MHz | `u_ramB (BRAM) -> u_pe/prod_reg` |
 | 32 | 8 ns | -1,547 ns | 9,55 ns | **≈ 104,7 MHz** | `u_ctrl/iy1 -> u_ramB/ADDR` (alamat buffer B) |
 
-Fmax P = 8 / 16 / 32 ≈ 105-108 MHz: **100 MHz tercapai untuk semua P; 150 MHz tidak tercapai**. Perbedaan antar-P kecil dan
+Fmax P = 8 / 16 / 32 ≈ 105-108 MHz pada RTL Fase 6 (sebelum pipeline ulang): 100 MHz tercapai untuk semua P; 150 MHz dicapai oleh versi `optimized` (bagian berikut). Perbedaan antar-P kecil dan
 berada dalam variasi penempatan (satu jalankan, tanpa seed sweep).
 
 ### Perbaikan yang dibuat dari hasil sapuan pertama (RTL, tetap bit-exact)
@@ -52,6 +52,24 @@ mode mikrofon (`test_mic`) bit-exact dengan golden. Regresi penuh `test_top` (da
 - **DSP48E1 = 17 untuk semua P**: pengali 8 x 8 di PE array dipetakan ke LUT/CARRY oleh Vivado, bukan ke DSP; DSP dipakai
   FFT/power/mel. Karena itu kenaikan P menambah LUT, bukan DSP. Tidak ada atribut vendor di `rtl/` (aturan 5).
 - BRAM tidak bergantung pada P (buffer A/B, ROM bobot, RAM FFT, feat_buf).
+
+## Hasil 150 MHz (cabang `optimized`, constraint 6,667 ns)
+
+RTL yang di-pipeline ulang (BRAM keluaran terdaftar, pengali dipecah, lebar aritmetika disempitkan, tahap compare/saturate
+terpisah, reset inti terdaftar); tetap bit-exact (`test_*` per modul, `test_cnn_trained`, dan `test_top` dataset + mikrofon lulus
+di Icarus, 2026-10-11). Vivado 2026.1, XC7A35T-1, OOC, setelah route:
+
+| P | LUT | FF | DSP48E1 | BRAM tile | WNS @ 6,667 ns | Endpoint gagal | Daya total* |
+|---|---|---|---|---|---|---|---|
+| 8 | 4.807 (23,1%) | 6.736 (16,2%) | 17 | 12 (24%) | +0,111 ns | 0 | 0,168 W |
+| 16 | 5.926 (28,5%) | 7.799 (18,8%) | 17 | 12 (24%) | +0,222 ns | 0 | 0,192 W |
+| 32 | 8.120 (39,0%) | 10.071 (24,2%) | 17 | 12 (24%) | +0,023 ns | 0 | 0,246 W |
+
+\* vectorless, bukan pengukuran. **150 MHz terpenuhi untuk P = 8, 16, 32** (satu jalankan per P, tanpa seed sweep; margin P=32
+hanya 0,023 ns). Dibanding 100 MHz: FF +21% sampai +35% (register pipeline), LUT praktis sama (P=8 -0,3%, P=16 +1,6%, P=32 -1,4%),
+DSP dan BRAM tidak berubah.
+
+Siklus inferensi versi ini belum diukur ulang (angka di bawah dari versi 100 MHz; pipeline menambah sedikit siklus).
 
 ## Latensi CNN (siklus dari simulasi x periode; angka turunan, bukan laporan alat)
 
@@ -81,7 +99,7 @@ prediksi Vivado dan tidak memuat timing. Selisih ini wajar untuk dua alat yang b
 | LUT | 4-8 rb | 5,8 rb (di dalam rentang) |
 | DSP48 | 25-30 | 17 (di bawah estimasi) |
 | BRAM36 | 15-25 | 12 tile (9 RAMB36 + 6 RAMB18; di bawah estimasi) |
-| Fmax | target 100 MHz, tantangan 150 MHz | ≈ 105-108 MHz untuk P = 8/16/32 (100 MHz tercapai; 150 MHz belum) |
+| Fmax | target 100 MHz, tantangan 150 MHz | 100 MHz tercapai (≈ 105-108 MHz); 150 MHz tercapai pada `optimized` untuk P = 8/16/32 (WNS +0,023 s.d. +0,222 ns) |
 
 ## Batasan
 - OOC tanpa constraint I/O: Fmax jalur I/O dan clock board belum diuji. Hanya satu jalankan per P (tanpa seed sweep).
@@ -89,6 +107,6 @@ prediksi Vivado dan tidak memuat timing. Selisih ini wajar untuk dua alat yang b
 - Daya vectorless, bukan pengukuran.
 
 ## Langkah berikut
-1. Bila 150 MHz dibutuhkan: tambah register keluaran BRAM dan pecah pengali 8 x 8 di `pe_array` (jalur kritis sekarang).
-2. Beberapa seed untuk rentang Fmax; constraint I/O dan clock board setelah papan diumumkan.
+1. Ukur ulang siklus inferensi versi 150 MHz; beberapa seed untuk rentang Fmax (margin P=32 tipis).
+2. Constraint I/O dan clock board (MMCM 147,456 MHz, K-22) setelah papan diumumkan.
 3. Angka sumber daya per modul (`util_impl_hier.rpt`) untuk tabel proposal.
