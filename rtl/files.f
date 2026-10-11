@@ -30,3 +30,4 @@ rtl/sys/uart_rx.sv
 rtl/sys/uart_tx.sv
 rtl/sys/csr.sv
 rtl/sys/uart_bridge.sv
+rtl/sys/suaratb_top.sv
