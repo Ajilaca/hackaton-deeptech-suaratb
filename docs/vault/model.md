@@ -7,6 +7,8 @@ Bobot, fitur, dan checkpoint ada di `/data/suaratb` dan tidak masuk repo. Keputu
 - **Hardware/pipeline: valid.** Golden int8 bit-exact; kuantisasi tidak menurunkan AUROC (+0,001).
 - **Akurasi klinis dari audio: TIDAK didukung data.** Batuk saja 0,56 (CNN) dan 0,66-0,70 (LR statistik log-mel, sebagian besar
   jenis kelamin; residu ≈ 0,58-0,60). Target 0,70 batuk-saja dan 0,80 fusi **tidak tercapai dan tidak diklaim**.
+- **Gejala klinis saja AUROC 0,77 (1.828 peserta, 205 positif); audio tidak menambah apa pun** (Δ +0,003, CI -0,02..+0,03).
+  Standar WHO TPP triase (sens ≥ 90%, spes ≥ 70%) **tidak dipenuhi** dan tidak diklaim (lihat §5c).
 - Hasil ini sejalan dengan literatur (lintas-dataset sering < 0,6; Zhang dkk., arXiv 2608.25846). Alat adalah triase
   pendukung, bukan diagnosis.
 
@@ -69,8 +71,10 @@ CI 95% bootstrap atas peserta. "Nol" = label diacak dalam klinik dan seluruh pip
 | Klinis diperluas, GBM dangkal | 0,730 | 0,66-0,81 | |
 | **Fusi klinis diperluas + audio** | **0,768** | 0,70-0,84 | Δ vs klinis14 +0,038 (CI -0,005..+0,061); skor audio dihitung di dalam lipatan |
 
-Target di CLAUDE.md: batuk-saja ≥ 0,70 **belum**; fusi ≥ 0,80 **belum** (terbaik 0,768); penurunan kuantisasi ≤ 0,02 **lulus**;
-HW vs golden bit-exact **lulus di golden** (RTL belum disimulasikan; Fase T).
+Target di CLAUDE.md: batuk-saja ≥ 0,70 **belum**; fusi ≥ 0,80 **belum** (terbaik 0,768 pada 360 peserta; 0,78 bila klinis
+dilatih pada peserta tanpa audio, §5b). Angka 0,70/0,80 adalah tebakan awal kita (CLAUDE.md "nilai awal"), bukan syarat lomba
+atau standar medis; pembanding klinis yang benar adalah WHO TPP (§5c); penurunan kuantisasi ≤ 0,02 **lulus**;
+HW vs golden bit-exact **lulus** (RTL disimulasikan per modul dan ujung ke ujung dataset + mikrofon, 2026-10-11; regresi penuh Fase T belum).
 
 Perancu jenis kelamin (Zambia):
 
@@ -96,6 +100,65 @@ Perancu jenis kelamin (Zambia):
 | VGGish, TBscreen -> Zambia | 360 / 58 | 0,548 | 0,46-0,63 | bebas perancu cohort: tidak beda dari acak |
 
 Distilasi VGGish -> CNN int8 **dibatalkan** (K-16): guru tidak memberi sinyal TB yang andal setelah sex/usia dikendalikan.
+
+### 5a. Lintas-perangkat (peserta Zambia yang sama: perekam, Phone A, B, C; 2026-10-11)
+
+LR statistik log-mel (frame aktif), split 5-lipat per peserta (peserta tidak muncul di latih dan uji sekaligus), 3 ulangan.
+Jumlah peserta per perangkat: perekam 244 (34 positif), Phone A 341 (54), B 347 (58), C 355 (60). Skor ulangan ditumpuk,
+jadi CI sempit; baca sebagai indikasi.
+
+| Uji | AUROC | Catatan |
+|---|---|---|
+| Dalam-perangkat: perekam / A / B / C | 0,539 / 0,612 / 0,624 / 0,616 | CI 95% mencakup 0,5 hanya untuk perekam; selebihnya ≈ 0,53-0,69 |
+| Latih satu perangkat -> uji perangkat lain (12 pasangan) | 0,520-0,595 (median ≈ 0,58) | tidak lebih baik dari dalam-perangkat |
+| Latih semua perangkat -> uji per perangkat | 0,583 / 0,631 / 0,607 / 0,592 | menambah perangkat tidak mengubah apa pun secara berarti |
+
+Kesimpulan: sinyal audio lemah (≈ 0,58-0,63) dan tidak naik melewati 0,70 dengan Phone B/C. Pada uji ini jenis kelamin/usia
+tidak dipisahkan; §4 menunjukkan sebagian besar sinyal LR berasal dari keduanya. Tidak ada klaim ketahanan lintas-perangkat.
+Kode: `model/device_eval.py`; berkas laporan lengkap ada di `$SUARATB_DATA/runs/reports/lintas-perangkat.md`.
+
+### 5b. Klinis pada semua peserta berlabel dan manfaat tambahan audio (2026-10-11)
+
+Metadata Zambia memuat 1.828 peserta berlabel (205 positif); hanya 360 (58 positif) punya audio yang dipakai. Fitur klinis
+(gejala, umur, berat, dst.; tanpa xpert/kultur/smear/AI X-ray) tidak butuh audio, jadi dapat dievaluasi pada semuanya.
+
+| Uji | n / positif | AUROC | CI 95% |
+|---|---|---|---|
+| Klinis 14 fitur, semua peserta (CV 5x5) | 1.828 / 205 | 0,772 | 0,74-0,81 |
+| Klinis diperluas, semua peserta | 1.828 / 205 | 0,772 | 0,74-0,81 |
+| Klinis diuji pada 360 berlaudio (dilatih pada 1.468 tanpa audio) | 360 / 58 | 0,774-0,782 | 0,70-0,85 |
+| Audio saja (log-mel, LR) pada 360 | 360 / 58 | 0,684 | 0,61-0,76 |
+| **Klinis + audio (fusi) pada 360** | 360 / 58 | 0,776 | 0,70-0,84 |
+| Δ fusi vs klinis | | **+0,003** | -0,021..+0,026 |
+
+- Klinis saja pada data penuh 0,77, sedikit di atas 0,73 yang dihitung pada 360 peserta (estimasi sebelumnya kurang tepat).
+- **Audio tidak menambah apa pun di atas klinis**: Δ +0,003, CI mencakup 0. Audio saja 0,68 sebagian besar dari
+  jenis kelamin/usia (§4).
+- Peserta berlaudio tidak mewakili semuanya: prevalensi 16,1% vs 10,0% (klinik Kan 21,9% vs 13,4%).
+- Target fusi ≥ 0,80 tidak tercapai (terbaik 0,78). Skor klinis diperoleh dari model yang dilatih pada peserta tanpa audio;
+  skor audio dihitung di dalam lipatan (tanpa kebocoran). Kode: `model/clinical_full.py`.
+
+### 5c. Jarak ke standar WHO TPP (triase berbasis komunitas)
+
+Standar: sensitivitas ≥ 90% dan spesifisitas ≥ 70% (WHO 2014; dikutip Huddart dkk., Sci. Data 2024). Skrining gejala dengan
+kuesioner pada pedoman WHO 2021: sensitivitas 42%. Titik operasi dari skor klinis (CV 5x5, 1.828 peserta; bukan dari audio):
+
+| Syarat | Hasil kita |
+|---|---|
+| Sensitivitas ≥ 90% | spesifisitas **38%** (butuh 70%) |
+| Sensitivitas ≥ 80% | spesifisitas 62% |
+| Spesifisitas ≥ 70% | sensitivitas **71%** (butuh 90%) |
+
+- Untuk 90%/70% sekaligus, AUROC harus ≈ **0,90** (aproksimasi binormal; perkiraan, bukan angka dari paper). Kita 0,77.
+- Audio tidak menutup jarak itu (§5b), dan fitur klinis tambahan di Zambia tidak menambah (klinis diperluas 0,772 = klinis 14).
+- Fitur klinis yang dipakai (14): umur, jenis kelamin, BMI, lama batuk, batuk berdahak, hemoptisis, nyeri dada, sesak, demam,
+  keringat malam, penurunan berat badan, status HIV, riwayat TB, merokok. Suhu dan denyut nadi **tidak** ada di Zambia
+  (variabel CODA). Alat hanya punya mikrofon: semua fitur klinis harus diinput manual, bukan diukur alat.
+- Kolom yang tidak boleh dipakai: xpert, kultur, smear, LAM, prediksi AI X-ray, ground truth (kebocoran label).
+- Populasi Zambia = pasien bergejala; TPP komunitas merujuk populasi lain, jadi perbandingan ini hanya orientasi.
+
+Posisi yang dapat dipertahankan: alat **prioritas rujukan**, bukan pengganti tes dan tidak memenuhi TPP. Memenuhi TPP butuh
+data yang lebih besar dan beragam serta bukti sinyal akustik yang belum ada pada data ini.
 
 ## 6. Batasan (wajib dibawa ke proposal)
 1. **Tidak ada klaim akurasi klinis.** AUROC batuk-saja tidak dapat dibedakan dari nol permutasi; setelah jenis kelamin dan
@@ -130,6 +193,8 @@ Yang TIDAK dijamin :
 - Kenaikan AUROC. Pada CODA sendiri makalah EPFL melaporkan dalam-dataset 0,63-0,64 dan lintas-dataset sering < 0,6;
   prevalensi per negara dapat diprediksi dari akuisisi (shortcut).
 - Menghilangnya perancu: label, perangkat, dan negara saling terkait di CODA; butuh balancing per subgrup.
-- Akses: CODA butuh persetujuan/surat institusi sehingga tidak tersedia untuk iterasi ini (K-15).
+- Akses: CODA butuh akun Synapse Certified + Validated, Intended Data Use Statement, dan persetujuan Terms of Use; upaya
+  verifikasi terlalu rumit sehingga tidak tersedia untuk iterasi ini (K-15). Set latih solicited hanya 0,43 GB
+  (1.105 peserta, 297 positif), jadi layak dicoba pasca-hackathon.
 Jadi dataset tambahan adalah jalur penguatan yang masuk akal pasca-hackathon, bukan alasan untuk mengklaim akurasi sekarang.
 

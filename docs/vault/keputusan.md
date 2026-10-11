@@ -124,8 +124,10 @@ dan vektor ikut diubah. PROVISIONAL: gain mikrofon INMP441 berbeda; harus dihitu
 FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum diputuskan).
 
 ## K-15 Sumber data tambahan: TBscreen, bukan CODA (2026-10-11)
-- CODA TB DREAM tidak dipakai: akses Synapse butuh akun dan persetujuan tim data. Pengguna tidak punya waktu
-  untuk memastikan akses sebelum Demo Day.
+- CODA TB DREAM tidak dipakai: akses Synapse butuh akun Certified + Validated, Intended Data Use Statement (≤ 500 kata),
+  dan persetujuan Terms of Use (Huddart dkk., Sci. Data 2024). Pengguna sudah mencoba; verifikasinya terlalu rumit untuk
+  selesai sebelum Demo Day. Set latih "solicited" hanya 0,43 GB (1.105 peserta, 297 positif), jadi bila akses diperoleh
+  kelak unduhannya cepat.
 - Kriteria data tambahan: unduhan terbuka tanpa persetujuan, label TB per peserta, audio batuk WAV yang bisa di-resample
   ke 16 kHz, dan lisensi yang jelas.
 - Terpilih: **TBscreen** (Sharma dkk., Sci. Adv. 2024; Nairobi; CC BY 4.0). Hanya WAV + CSV yang diambil (1,37 GB) dari
@@ -190,3 +192,14 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
 - Siklus inferensi terukur di simulasi (tanpa pemuatan 2.000 siklus): P=8: 451.851; P=16: 226.490; P=32: 122.843.
   Waktu @98,304 MHz = siklus x 10,17 ns -> P=16: ~2,30 ms (BERGANTUNG Fmax; Fmax belum diukur, Fase 6).
 - Catatan: sebagian besar tidak dioptimalkan (tulis requant tidak tumpang-tindih dengan MAC), sumber daya belum diukur.
+
+## K-21 Target akurasi diganti pelaporan terukur + pembanding WHO TPP (2026-10-11)
+- Alasan: 0,70 (batuk saja) dan 0,80 (fusi) adalah tebakan awal di CLAUDE.md, bukan syarat lomba atau standar medis. Hasil
+  terukur: audio 0,52-0,63 (tidak beda dari nol permutasi); klinis 14 fitur 0,772 pada 1.828 peserta (205 positif); tambahan audio
+  di atas klinis +0,003 (CI -0,021..+0,026) pada 360 peserta berlaudio; lintas-perangkat dan lintas-dataset 0,50-0,63.
+- Standar pembanding: WHO TPP triase komunitas (sens >= 90%, spes >= 70%). Skor klinis kita: spes 38% pada sens 90%, sens 71% pada
+  spes 70%; butuh AUROC ~0,90 (aproksimasi binormal). TIDAK dipenuhi dan tidak diklaim.
+- Aturan baru: akurasi dilaporkan sebagai AUROC + CI 95% bootstrap atas peserta + nol permutasi + kontrol jenis kelamin/usia +
+  hasil lintas-dataset/perangkat; setiap klaim melewati 0,5 harus menyebut apakah CI mencakup 0,5 atau nol permutasi.
+  Target 0,70/0,80 dihapus sebagai syarat lulus. Penurunan kuantisasi <= 0,02 dan HW vs golden bit-exact tetap.
+- Posisi alat: prioritas rujukan, bukan pengganti tes. Penguatan data (mis. CODA, K-15) = pasca-hackathon.
