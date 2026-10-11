@@ -54,6 +54,7 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> list[str]:
         pf = params.PREEMPH_FRAC
         y = preemph(x16, frac=pf)
         write_mem(d / f"{case}_in.mem", x16, 16); write_mem(d / f"{case}_out.mem", y, 16 + pf)
+        write_mem(d / f"{case}_out_s16.mem", preemph(x16), 16)          # jalur detektor (int16)
         # window + fft + power untuk satu frame representatif (frame 20)
         fr = F.frame_signal(y)[20]
         d = out / "window"
@@ -81,13 +82,29 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> list[str]:
         Lall = F.log_mel_q(x16)
         write_mem(d / f"{case}_in.mem", x16, 16)
         write_mem(d / f"{case}_out_feat.mem", F.features_q(x16), 8)
+        # frame_buf: 6 frame pertama (1200 sampel) + energi hop
+        d = out / "frame_buf"
+        nfr = 6
+        nin = params.FRAME_LEN + params.HOP * (nfr - 1)
+        fr_all = F.frame_signal(y)[:nfr]
+        write_mem(d / f"{case}_in_wide.mem", y[:nin], 16 + pf)
+        write_mem(d / f"{case}_in_s16.mem", preemph(x16)[:nin], 16)
+        write_mem(d / f"{case}_out_frames.mem", fr_all.ravel(), 16 + pf)
+        write_mem(d / f"{case}_out_e.mem", hop_energy(preemph(x16))[:nfr], 48)
+        # i2s_rx: kata 24 bit (sampel<<8 | byte rendah acak), harapan = 16 bit teratas
+        d = out / "i2s_rx"
+        rng = np.random.default_rng(sum(map(ord, case)))
+        ns = 96
+        words = (x16[:ns].astype(np.int64) << 8) | rng.integers(0, 256, ns)
+        write_mem(d / f"{case}_in_words.mem", words, 24)
+        write_mem(d / f"{case}_out.mem", x16[:ns], 16)
         # detektor pada aliran
         d = out / "cough_det"
         E = hop_energy(preemph(x16))        # detektor: pre-emphasis int16 (pembulatan)
         ev = cough_det(E)
         write_mem(d / f"{case}_in_E.mem", E, 48)
         write_mem(d / f"{case}_out_onsets.mem", [e_.onset for e_ in ev] or [-1], 16)
-    for blk in ("preemph", "window", "fft512", "power", "mel", "log_q", "quant", "frontend", "cough_det"):
+    for blk in ("preemph", "window", "fft512", "power", "mel", "log_q", "quant", "frontend", "cough_det", "frame_buf", "i2s_rx"):
         _meta(out / blk, "meta", block=blk, fft_w=W, cases=list(sig), calibration=params.CALIBRATION_SOURCE)
         made.append(blk)
     # CNN: model acak + kalibrasi requant pada fitur sintetis
