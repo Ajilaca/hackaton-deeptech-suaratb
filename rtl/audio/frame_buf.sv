@@ -7,7 +7,7 @@
 // Parameter : W (lebar sampel lebar = 16+FRAC), FRAME_LEN, HOP, NRING(512), E_W (48)
 // Antarmuka : in_valid/in_wide/in_s16 (stream valid saja). Sampel masukan HARUS berjarak >= FRAME_LEN+4 siklus.
 //             keluaran frame_valid/frame_data/frame_first/frame_last/frame_idx; e_valid/e_out.
-// Latensi   : e_valid 1 siklus, frame_valid (frame_first) 3 siklus setelah sampel pemicu.
+// Latensi   : e_valid 2 siklus, frame_valid (frame_first) 3 siklus setelah sampel pemicu (kuadrat didaftarkan lebih dulu).
 // Golden    : golden/blocks/frontend.py frame_signal(preemph(x, frac)), cough_det.py hop_energy(preemph(x))
 module frame_buf #(
   parameter int W         = 16 + suaratb_pkg::PREEMPH_FRAC,
@@ -57,7 +57,10 @@ module frame_buf #(
     .re(rd_en), .raddr(raddr), .rdata(rdata)
   );
 
-  // penulisan, energi hop, pemicu frame
+  // penulisan, energi hop, pemicu frame. Kuadrat sampel didaftarkan (sq_q) sebelum diakumulasi supaya
+  // jalur pengali 16x16 -> penjumlah 48 bit terpisah menjadi dua tahap.
+  logic        acc_en_q, acc_last_q;
+  logic [31:0] sq_q;
   always_ff @(posedge clk) begin
     if (!rst_n) begin
       wr_ptr  <= '0;
@@ -68,25 +71,38 @@ module frame_buf #(
       e_out   <= '0;
       e_valid <= 1'b0;
       start   <= 1'b0;
+      acc_en_q   <= 1'b0;
+      acc_last_q <= 1'b0;
     end else begin
-      e_valid <= 1'b0;
-      start   <= 1'b0;
+      e_valid    <= 1'b0;
+      start      <= 1'b0;
+      acc_en_q   <= 1'b0;
+      acc_last_q <= 1'b0;
       if (in_valid) begin
         wr_ptr <= wr_ptr + 1'b1;
         if (!acc_on) begin
           if (cnt_pre == PRE_SKIP - 1) acc_on <= 1'b1;
           else                          cnt_pre <= cnt_pre + 1'b1;
         end else begin
+          sq_q     <= sq;
+          acc_en_q <= 1'b1;
           if (win_pos == HOP - 1) begin
-            e_out   <= acc + {{(E_W-32){1'b0}}, sq};
-            e_valid <= 1'b1;
-            acc     <= '0;
-            win_pos <= '0;
-            start   <= 1'b1;
+            acc_last_q <= 1'b1;
+            win_pos    <= '0;
+            start      <= 1'b1;
           end else begin
-            acc     <= acc + {{(E_W-32){1'b0}}, sq};
             win_pos <= win_pos + 1'b1;
           end
+        end
+      end
+      // tahap akumulasi (satu siklus setelah sampel)
+      if (acc_en_q) begin
+        if (acc_last_q) begin
+          e_out   <= acc + {{(E_W-32){1'b0}}, sq_q};
+          e_valid <= 1'b1;
+          acc     <= '0;
+        end else begin
+          acc <= acc + {{(E_W-32){1'b0}}, sq_q};
         end
       end
     end

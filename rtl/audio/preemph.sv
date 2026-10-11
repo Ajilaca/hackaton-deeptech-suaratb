@@ -5,7 +5,7 @@
 //             round(v/2^s) = (v + 2^(s-1)) >>> s (tambah setengah lalu geser aritmetik).
 // Parameter : FRAC (bit pecahan keluaran lebar, = FFT_GUARD), COEF (Q15)
 // Antarmuka : in_valid/in_sample (int16) -> out_valid/out_wide/out_s16 (stream valid saja)
-// Latensi   : 2 siklus. Keadaan awal x[-1] = 0 (reset).
+// Latensi   : 4 siklus (kali; bulatkan; kurangi; saturasi). Keadaan awal x[-1] = 0 (reset).
 // Golden    : golden/blocks/preemph.py : preemph(x, frac=FRAC) dan preemph(x) (frac=0)
 module preemph #(
   parameter int FRAC = suaratb_pkg::PREEMPH_FRAC,
@@ -43,13 +43,15 @@ module preemph #(
     end
   end
 
-  // tahap 2: pembulatan, pengurangan, saturasi
+  // tahap 2: pembulatan hasil kali (tambah setengah + geser aritmetik)
+  logic                v2, v3;
+  logic signed [33:0]  r_wide_q, r_16_q, x_e_q;
+  logic signed [33:0]  y_wide_q, y_16_q;
+
   wire signed [33:0] prod_e   = prod1;
   wire signed [33:0] x_e      = {{18{x1[15]}}, x1};
   wire signed [33:0] r_wide   = (prod_e + (34'sd1 <<< (SH_W - 1))) >>> SH_W;
   wire signed [33:0] r_16     = (prod_e + 34'sd16384) >>> 15;
-  wire signed [33:0] y_wide   = (x_e <<< FRAC) - r_wide;
-  wire signed [33:0] y_16     = x_e - r_16;
 
   localparam logic signed [33:0] MAXW = (34'sd1 <<< (OW - 1)) - 34'sd1;
   localparam logic signed [33:0] MINW = -(34'sd1 <<< (OW - 1));
@@ -58,13 +60,29 @@ module preemph #(
 
   always_ff @(posedge clk) begin
     if (!rst_n) begin
+      v2        <= 1'b0;
+      v3        <= 1'b0;
       out_valid <= 1'b0;
     end else begin
-      out_valid <= v1;
-      if (v1) begin
-        out_wide <= (y_wide > MAXW) ? OW'(MAXW) : (y_wide < MINW) ? OW'(MINW) : y_wide[OW-1:0];
-        out_s16  <= (y_16 > MAX16) ? 16'(MAX16) : (y_16 < MIN16) ? 16'(MIN16) : y_16[15:0];
-      end
+      v2        <= v1;
+      v3        <= v2;
+      out_valid <= v3;
+    end
+    // tahap 2: bulatkan
+    if (v1) begin
+      r_wide_q <= r_wide;
+      r_16_q   <= r_16;
+      x_e_q    <= x_e;
+    end
+    // tahap 3: kurangi
+    if (v2) begin
+      y_wide_q <= (x_e_q <<< FRAC) - r_wide_q;
+      y_16_q   <= x_e_q - r_16_q;
+    end
+    // tahap 4: saturasi
+    if (v3) begin
+      out_wide <= (y_wide_q > MAXW) ? OW'(MAXW) : (y_wide_q < MINW) ? OW'(MINW) : y_wide_q[OW-1:0];
+      out_s16  <= (y_16_q > MAX16) ? 16'(MAX16) : (y_16_q < MIN16) ? 16'(MIN16) : y_16_q[15:0];
     end
   end
 endmodule
