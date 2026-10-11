@@ -49,7 +49,7 @@ def test_feature_range_not_saturated_much():
     fr = []
     for sg in (3.0, 10.0, 30.0):
         for kind in ("cough", "noise", "speech"):
-            fr.append(F.features_q(F.pad_clip(synth.clip(2, sg, 15.0, kind))))
+            fr.append(F.features_q(F.pad_clip(synth.clip(2, sg, 15.0, kind)), offset=6690))   # offset kalibrasi sintetis
     q = np.concatenate([f.ravel() for f in fr]).astype(int)
     assert (np.mean(q == 127) + np.mean(q == -128)) < 0.05
 

@@ -43,7 +43,7 @@ MEL_SHIFT = 0              # geser kanan akumulator mel sebelum log (K-05: 0 = t
 LOG_IN_BITS = 58           # masukan log2 (K-05): batas atas akumulator mel pada FFT_W=24, tanpa saturasi
 LOG_LUT_BITS = 8           # 256 entri
 LOG_FRAC = 8               # keluaran Q6.8 (6 bit bulat karena leading-one 0..57)
-FEAT_OFFSET = 6690         # PROVISIONAL (sintetis): nilai L (Q6.8) yang dipetakan ke int8 = 0 (K-06)
+FEAT_OFFSET = 8265         # dari audio NYATA perekam (golden.calibrate_real, K-14); PROVISIONAL untuk INMP441
 FEAT_SHIFT = 5             # q = sat8(round((L - FEAT_OFFSET) / 2^FEAT_SHIFT)); langkah 0,125 oktaf (0,38 dB)
 
 
@@ -107,13 +107,16 @@ def n_macs(**kw) -> int:
 
 
 def sv_package(name: str = "suaratb_pkg") -> str:
-    """Paket SystemVerilog dari parameter di atas (dipakai RTL Fase 2+)."""
+    """Paket SystemVerilog dari parameter di atas (dipakai RTL Fase 2+). Nama berawalan '_' dilewati;
+    nilai di luar int 32 bit ditulis sebagai longint."""
     kv = [(k, v) for k, v in globals().items()
-          if k.isupper() and isinstance(v, int) and not isinstance(v, bool)]
+          if k.isupper() and not k.startswith("_") and isinstance(v, int) and not isinstance(v, bool)]
     lines = [f"// Dihasilkan oleh golden/params.py (sumber: {CALIBRATION_SOURCE}). JANGAN diedit manual.",
              f"package {name};"]
     for k, v in kv:
-        lines.append(f"  localparam int {k} = {v};")
+        ty = "int" if -(1 << 31) <= v < (1 << 31) else "longint"
+        lines.append(f"  localparam {ty} {k} = {v};")
     lines.append(f"  localparam int FFT_STAGE_SHIFT_MASK = {sum(b << i for i, b in enumerate(FFT_STAGE_SHIFT))};")
+    lines.append(f"  localparam int N_FFT_STAGES = {len(FFT_STAGE_SHIFT)};")
     lines.append("endpackage")
     return "\n".join(lines) + "\n"

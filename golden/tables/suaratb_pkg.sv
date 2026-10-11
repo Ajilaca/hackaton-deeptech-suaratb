@@ -22,10 +22,9 @@ package suaratb_pkg;
   localparam int LOG_IN_BITS = 58;
   localparam int LOG_LUT_BITS = 8;
   localparam int LOG_FRAC = 8;
-  localparam int FEAT_OFFSET = 6690;
+  localparam int FEAT_OFFSET = 8265;
   localparam int FEAT_SHIFT = 5;
   localparam int POWER_BITS = 47;
-  localparam int _P_SUM_MAX = 54975581388800;
   localparam int MEL_ACC_BITS = 58;
   localparam int C1 = 16;
   localparam int C2 = 32;
@@ -47,4 +46,5 @@ package suaratb_pkg;
   localparam int DET_N_FLOOR = 640;
   localparam int DET_E_SHIFT = 0;
   localparam int FFT_STAGE_SHIFT_MASK = 511;
+  localparam int N_FFT_STAGES = 9;
 endpackage

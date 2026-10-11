@@ -148,3 +148,23 @@ def calibrate_requant(model: QModel, inputs: list[np.ndarray], target: int = 100
         p = max(float(np.percentile(np.concatenate(accs), pct)), 1.0)
         tgt = target if not L.final else 2000
         L.m0, L.shift = m0_shift_from_scale(tgt / p)
+
+
+def save_qmodel(model: QModel, path) -> None:
+    """Simpan QModel ke .npz (bobot int8, bias int32, M0, shift, flag layer)."""
+    d = {"n": np.array(len(model.layers))}
+    for i, L in enumerate(model.layers):
+        d[f"w{i}"] = L.w.astype(np.int8); d[f"b{i}"] = L.b.astype(np.int32)
+        d[f"meta{i}"] = np.array([L.m0, L.shift, int(L.pool), int(L.final), L.gap_hw, int(L.kind == "conv")])
+        d[f"name{i}"] = np.array(L.name)
+    np.savez(path, **d)
+
+
+def load_qmodel(path) -> QModel:
+    z = np.load(path)
+    m = QModel()
+    for i in range(int(z["n"])):
+        m0, sh, pool, final, gap_hw, is_conv = (int(v) for v in z[f"meta{i}"])
+        m.layers.append(QLayer(str(z[f"name{i}"]), "conv" if is_conv else "fc", z[f"w{i}"].astype(np.int8),
+                               z[f"b{i}"].astype(np.int32), m0, sh, bool(pool), bool(final), gap_hw))
+    return m
