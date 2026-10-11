@@ -11,7 +11,7 @@ import soundfile as sf
 from golden import paths
 
 META = "Metadata and Codebook/Metadata and Codebook/GHAI_Final_Data_2023.csv"
-BC = re.compile(r"(\d\d-\d{3}-\d{4})")
+BC = re.compile(r"(?<!\d)(\d{1,2})-(\d{3})-(\d{4})(?!\d)")
 
 
 def device_of(folder: str) -> str:
@@ -38,7 +38,8 @@ def index_audio(root: pathlib.Path | None = None, with_header: bool = True) -> p
         rel = p.relative_to(root)
         top = rel.parts[0]
         m = BC.search(p.name)
-        r = dict(path=str(rel), device=device_of(top), barcode=m.group(1) if m else None, name=p.name)
+        r = dict(path=str(rel), device=device_of(top),
+                 barcode=f"{int(m.group(1)):02d}-{m.group(2)}-{m.group(3)}" if m else None, name=p.name)
         if with_header:
             try:
                 i = sf.info(str(p))
