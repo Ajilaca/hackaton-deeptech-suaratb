@@ -116,6 +116,8 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> list[str]:
         write_mem(d / f"{L_.name}_w.mem", L_.w.ravel(), 8)
         write_mem(d / f"{L_.name}_b.mem", L_.b, params.BIAS_BITS)
     write_mem(d / "requant.mem", [v for L_ in model.layers for v in (L_.m0, L_.shift)], 16)
+    from .gen_cnn_rom import write_roms
+    write_roms(model, d)                                   # ROM dikemas untuk P lane (cnn_top)
     for case, x in zip(sig, feats):
         write_mem(d / f"{case}_in.mem", x.ravel(), 8)
         write_mem(d / f"{case}_out_logit.mem", C.cnn_forward(x, model), params.LOGIT_BITS)

@@ -51,6 +51,8 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> dict:
     write_mem(out / "mel_rom.mem", mw, 19, "{band[5:0], w[11:0], eob}; urut bin 0..256")
     write_mem(out / "log_lut.mem", log_lut(), 8, "round(256*log2(1+(m+0.5)/256)), maks 255")
     (out / "suaratb_pkg.sv").write_text(params.sv_package())
+    from .gen_cnn_rom import cfg_package
+    (out / "cnn_cfg_pkg.sv").write_text(cfg_package())
     return dict(twiddle=len(c), window=len(w) // 2, mel_rom=len(mw), log_lut=256)
 
 

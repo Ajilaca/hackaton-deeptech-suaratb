@@ -19,7 +19,8 @@ golden: tables vectors budget
 
 tables:
 	$(PY) -m golden.gen_tables
-	mkdir -p rtl/mem
+	mkdir -p rtl/mem rtl/cnn
+	cp golden/tables/cnn_cfg_pkg.sv rtl/cnn/cnn_cfg_pkg.sv
 	cp golden/tables/suaratb_pkg.sv rtl/common/suaratb_pkg.sv
 	cp golden/tables/*.mem rtl/mem/
 
