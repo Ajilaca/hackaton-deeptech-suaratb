@@ -55,7 +55,11 @@ Diperbarui: 2026-10-10.
   hasil di `model.md` bagian 5. Tidak ada sinyal TB yang andal; cohort A/C hampir = label (perancu rekrutmen).
 - Fitur klinis diperluas + fusi bersarang: `model/clinical.py`, `model.md` bagian 4. Fusi terbaik 0,768 (target 0,80 belum).
 - Uji embedding VGGish: `model/embed_test.py`, `model/embed_eval.py`; hasil di `model.md` bagian 5. Distilasi dibatalkan (K-16).
-- Belum ada commit. Keputusan tertunda: revisi target (K-16), arsitektur Fase 4 (CNN vs akumulator + LR).
+- Target 0,70/0,80 diganti pelaporan terukur + pembanding WHO TPP (K-21). Klinis saja 0,772 (1.828 peserta); audio tidak
+  menambah (+0,003). Lintas-perangkat Phone B/C 0,52-0,63. Detail di `model.md` bagian 5a-5c.
+- Fase 5: `test_top` (dataset 2 klip + mikrofon) LULUS setelah dua perbaikan RTL: pembersihan jalur DSP saat ganti mode, dan
+  menunggu frame ke-50 dari awal segmen (bukan frame ke-45) di `suaratb_top.sv`.
+- Cabang lokal: fase0-2 (5 commit), fase3, fase4, fase5-6 (belum ada commit). Push oleh pengguna.
 - Dokumen model dilebur ke satu berkas `model.md` (7 laporan lama dipindah ke `$SUARATB_DATA/runs/reports/`, di luar repo).
   Arsitektur Fase 4 diputuskan: CNN output-stationary (K-17). Phone B/C Kaggle masih diunduh (tmux `kaggle2`).
 
