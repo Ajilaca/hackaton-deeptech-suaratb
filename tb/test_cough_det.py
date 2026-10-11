@@ -13,7 +13,7 @@ from golden.blocks.cough_det import cough_det
 from tb.common import vec
 from tb.common.cocotb_utils import start_clock, reset
 
-GAP = 3
+GAP = 6
 
 
 async def run_seq(dut, E):
