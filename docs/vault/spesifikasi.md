@@ -22,7 +22,7 @@ Alasan tiap nilai: `keputusan.md` (K-xx).
 | power | re² + im², bin 0..256, 47 bit tak bertanda | POWER_BITS = 47 |
 | mel | 40 band HTK 50-8000 Hz, bobot Q0.12 sparse (493 entri ROM, maks. 2 band/bin) | MEL_W_FRAC = 12, MEL_SHIFT = 0, akumulator 58 bit |
 | log_q | leading-one + LUT 256 entri; keluaran Q6.8 (14 bit) (K-05) | LOG_IN_BITS = 58, LOG_FRAC = 8 |
-| quant | q = sat8(round((L - OFFSET) / 2^SHIFT)) | FEAT_SHIFT = 5, ⚠ FEAT_OFFSET = 6690 |
+| quant | q = sat8(round((L - OFFSET) / 2^SHIFT)) | FEAT_SHIFT = 5, ⚠ FEAT_OFFSET = 8265 (K-14, data nyata perekam) |
 
 ## CNN int8
 | Parameter | Nilai |
@@ -48,3 +48,13 @@ selama ≥ 2 frame; segmen = onset-5 .. onset+44; N dibekukan saat merekam; refr
 | BRAM36 XC7A35T | ~17 dari 50 | per-memori, estimasi |
 | LUT | 4-8 rb (dari CLAUDE.md) | tebakan, keyakinan rendah |
 | Fmax | target 100 MHz, tantangan 150 MHz | belum diukur |
+
+## Antarmuka sistem (Fase 5, `rtl/sys/`)
+| Item | Nilai |
+|---|---|
+| Masukan sampel | mode 1: I2S INMP441 (FPGA master, BCLK clk/96); mode 0: UART dataset |
+| UART | 8N1, `CLK_PER_BIT` = clk/baud (853 -> 115200 pada 98,304 MHz); tanpa FIFO: 2 byte/sampel harus >= 404 siklus |
+| Perintah host -> alat | `'W' addr data` tulis CSR; `'R' addr` balasan 1 byte; `'D'` + 8240 x int16 LE = klip dataset |
+| Hasil alat -> host | `'L' lo hi seq` (4 byte) tiap inferensi: logit int16 per batuk (rata-rata 3-5 batuk di host) |
+| CSR | 0x00 CTRL (bit0 mode, bit1 clear), 0x01 STATUS, 0x02-03 LOGIT, 0x04 SEQ, 0x05-06 NSAT, 0x07 VERSION, 0x08-09 FRAMES |
+| Alur | sampel -> preemph -> frame_buf -> dsp_chain -> feat_buf -> cnn_top -> logit; frame_buf.e -> cough_det -> segmen |

@@ -104,3 +104,89 @@ Kapasitas perangkat dari ingatan, belum diverifikasi.
 | log2 | Q5.8, masukan 32 bit | Q6.8, masukan 58 bit (K-05) |
 | Pre-emphasis | tak tentu | 16+8 bit (K-08) |
 | Detektor 8 / 64 | tebakan | dipertahankan, berbasis sintetis (K-07) |
+
+## K-13 Fase 2: antarmuka front-end (ditulis, belum dijalankan)
+- `i2s_rx`: FPGA sebagai master (BCLK = clk/96, WS = BCLK/64). 24 bit MSB-first, tertunda 1 BCLK; keluaran = 16 bit teratas
+  (pemotongan/lantai). Konsekuensi: derau kuantisasi masukan = int16 seperti diasumsikan golden; bit rendah mikrofon (24 bit)
+  tidak dipakai (lihat butir terbuka di status-fase.md).
+- `preemph`: SATU perkalian a·x[n-1] menghasilkan dua keluaran: `out_wide` (16+8 bit, jalur FFT, K-08) dan `out_s16`
+  (int16, jalur detektor). Keduanya sama persis dengan golden `preemph(x, frac=8)` dan `preemph(x)`. Pembulatan ganda
+  TIDAK diganti dengan pembulatan `out_wide` ke 16 bit karena hasilnya bisa berbeda 1 LSB.
+- `frame_buf`: cincin 512 x 24 bit; frame diputar ulang 400 sampel/siklus-tunggal setelah sampel pemicu; energi hop
+  dihitung di jendela [160f+240, 160f+400) = akhir frame f (golden `hop_energy`). Kontrak: jarak sampel >= 404 siklus.
+- `cough_det`: antarmuka event (`trig`, `onset_frame`, `start_frame`, `end_frame`, `seg_done`); nilai pembekuan N saat merekam
+  dan refractory identik golden. `seg_done` memberi tahu feat_buf (Fase 3) bahwa 50 kolom terakhir = segmen.
+
+## K-14 FEAT_OFFSET dari audio nyata (6690 -> 8265)
+Dihitung oleh `golden.calibrate_real` pada 1.764 klip batuk nyata (perekam). Dengan 6690 (sintetis) 2,0% elemen jenuh
+int8, dengan 8265 0,2%. Model CNN Fase M dilatih pada fitur dengan offset ini, sehingga `params.py`, tabel, paket SV,
+dan vektor ikut diubah. PROVISIONAL: gain mikrofon INMP441 berbeda; harus dihitung ulang pada audio perangkat.
+FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum diputuskan).
+
+## K-15 Sumber data tambahan: TBscreen, bukan CODA (2026-10-11)
+- CODA TB DREAM tidak dipakai: akses Synapse butuh akun dan persetujuan tim data. Pengguna tidak punya waktu
+  untuk memastikan akses sebelum Demo Day.
+- Kriteria data tambahan: unduhan terbuka tanpa persetujuan, label TB per peserta, audio batuk WAV yang bisa di-resample
+  ke 16 kHz, dan lisensi yang jelas.
+- Terpilih: **TBscreen** (Sharma dkk., Sci. Adv. 2024; Nairobi; CC BY 4.0). Hanya WAV + CSV yang diambil (1,37 GB) dari
+  zip 424,6 GB lewat HTTP range request. Klip 1 detik (batuk pasif dan paksa), tiga perangkat (Pixel, mik boundary, Yeti).
+- Batas: populasi, perangkat, dan protokol berbeda dari Zambia. Makalah lintas-dataset (Zhang dkk., arXiv 2608.25846)
+  melaporkan AUROC lintas-dataset sering < 0,6, jadi TBscreen dipakai untuk (a) evaluasi dalam-dataset kedua dan
+  (b) uji lintas-dataset yang jujur, bukan untuk klaim generalisasi.
+- Kandidat lain yang diperiksa: COUGHVID/Coswara (terbuka, tetapi COVID, tanpa label TB); halaman MakBRC Uganda
+  sedang offline. Tidak ada dataset TB terbuka lain yang ditemukan.
+
+## K-16 Hasil langkah 1-3: tidak ada sinyal audio-TB yang andal; distilasi dibatalkan (2026-10-11)
+- TBscreen (`model.md` bagian 5): dalam-dataset 0,577 (nol p95 0,627); lintas-dataset 0,50-0,55; cohort A/C hampir = label
+  (cohort saja 0,917), jadi angka dalam-TBscreen tidak dapat ditafsirkan sebagai penanda TB.
+- Klinis diperluas (`model.md` bagian 4): 0,743 vs 0,730 (Δ +0,012, CI mencakup 0); fusi terbaik 0,768; target 0,80 belum tercapai.
+- VGGish (`model.md` bagian 5): lebih buruk daripada log-mel di Zambia; distilasi tidak dilakukan.
+- Dampak: target batuk-saja 0,70 dan fusi 0,80 tidak dicapai dan tidak diklaim. Klaim proyek tetap: pipeline lengkap dengan
+  latensi/sumber daya terukur. Opsi revisi target (laporan CI + p-permutasi setelah kontrol sex/usia) menunggu keputusan pengguna.
+
+## K-17 Arsitektur Fase 4: CNN output-stationary, paralel di kanal keluaran (2026-10-11)
+- P lane = P kanal keluaran untuk piksel yang sama; 1 aktivasi/siklus dibroadcast; bobot P x 8 bit per
+  siklus dari ROM; akumulator 24 bit; MaxPool pada akumulator sebelum requant (bit-exact dengan golden karena M0 >= 0 dan
+  ReLU monoton); satu unit requant dipakai bergiliran; FC memakai pe_array yang sama (k=1); GAP unit kecil; padding lewat
+  flag luar-batas; deskriptor layer dari ROM `.mem` sehingga model dapat diganti tanpa mengubah RTL.
+- Alasan: 1 baca aktivasi/siklus (tanpa RAM berbank/line buffer), siklus = 231.168 pada P=16 (sesuai budget.py), risiko
+  jadwal rendah. Ditolak: systolic/weight-stationary (kontrol rumit), paralel-piksel (butuh P aktivasi/siklus),
+  akumulator + LR (bukan akselerator; hanya disebut sebagai alternatif hemat di proposal).
+- Akurasi TIDAK diklaim (K-16); arsitektur dipilih demi demo akselerator yang terukur.
+
+## K-18 Fase 3: antarmuka dan jadwal DSP (ditulis, belum disimulasikan)
+- Rantai: `frame_buf` -> `window` -> `fft512` -> `power` -> `mel` -> `log_q` -> `quant` -> `feat_buf` (`dsp_chain` membungkus
+  window..quant). Semua parameter dari `suaratb_pkg`; ROM dari `rtl/mem/*.mem` (parameter `INIT_*`).
+- Laju: waktu per frame tersedia 983 rb siklus (hop 160 sampel @ 98,304 MHz), kebutuhan ~6-8 rb siklus, jadi seluruh rantai
+  dibuat SERIAL dan kecil: `fft512` 1 butterfly, 2 siklus/butterfly, RAM in-place 512 x 48 bit; jeda `DRAIN`=8 antar-stage
+  (aman; urutan indeks sudah cukup, margin sengaja); keluaran bin tiap `OUT_GAP`=4 siklus (kontrak: `power` >= 1, `mel` >= 3).
+- Perkiraan sumber daya (ESTIMASI, bukan laporan alat): pengali window 1, fft 4 (24x16), power 2 (24x24), mel 1 (48x12);
+  RAM FFT 24 Kbit, RAM fitur 20 Kbit, akumulator mel 40 x 58 bit di register.
+- Verifikasi tanpa simulasi RTL (aturan 3): model Python jadwal FFT (`golden/test_fft_schedule.py`: bit-exact vs golden,
+  waktu tulis a'/b', pengalamatan in-place, indeks twiddle, geser stage) dan model alamat window/mel/feat_buf
+  (`golden/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
+  feat_buf}.py`) dan baru dijalankan di Fase T. RTL belum di-lint.
+
+## K-19 Aturan 3 diubah: tes unit per modul segera dijalankan (2026-10-11)
+- Alasan: kode Fase 2-3 (~20 modul) belum pernah dijalankan; menunda ke Fase T menumpuk bug ke 17-19 Okt, dua hari sebelum
+  Demo Day. Pengguna memilih menjalankan tes sekarang.
+- Aturan baru: tiap modul Fase 1-5 ditulis bersama tb, lalu langsung dites sendiri (`make test-unit M=<modul>`) dan diperbaiki
+  sampai hijau. Fase T tinggal integrasi dan regresi. Lint boleh kapan saja. Commit tetap ditunda sampai selesai dan
+  dipecah per branch (fase1-2, fase3, fase4, fase5-6); Fase 5, T, 6 atas nama Faza Dzil.
+- Simulator: Verilator 5.020 (apt) terlalu lama untuk cocotb 2.1 (`VerilatedVpi::clearEvalNeeded` tidak ada); tes unit memakai
+  **Icarus 12** (`SIM=icarus`, default Makefile). `sva_stream.sv` (properti SVA) dilewati pada Icarus. Parameter string `.mem` dibuat
+  tak bertipe (`parameter INIT_FILE = "..."`) karena Icarus 12 gagal mengikat `parameter string`; jalur `.mem` relatif terhadap ROOT.
+- Hasil tes unit pertama (2026-10-11): quant, log_q, power, window, mel, fft512, feat_buf, dsp_chain, preemph, i2s_rx,
+  frame_buf, cough_det semuanya LULUS bit-exact terhadap vektor golden. Dua perbaikan hanya di sisi tes (model mikrofon I2S tidak
+  memulai slot kiri pertama; indeks di tes log_q/quant melebihi 6 bit). Lint Verilator: tanpa galat, hanya peringatan lebar/tak-terpakai.
+
+## K-20 Fase 4: CNN output-stationary ditulis dan lulus tes unit (2026-10-11)
+- Modul: `rtl/cnn/{cnn_cfg_pkg,pe_array,requant,gap,cnn_ctrl,cnn_top}.sv`. Bentuk layer/alamat ROM dari
+  `golden/gen_cnn_rom.py` (sumber tunggal `params.layer_descs()`, P dari params); ROM dikemas P lane (`cnn_wrom/bias/rq.mem`).
+- Pool pada akumulator sebelum requant (bit-exact dengan golden); satu unit requant berurutan; GAP unit sendiri; FC memakai
+  pe_array yang sama; deskriptor sebagai fungsi paket (bukan array parameter, kompatibel Icarus).
+- HASIL SIMULASI (Icarus, bukan laporan alat): logit cnn_top == golden bit-exact untuk 5 kasus sintetis (bobot acak),
+  8 klip dengan bobot terlatih model_v2, dan P = 8 / 16 / 32.
+- Siklus inferensi terukur di simulasi (tanpa pemuatan 2.000 siklus): P=8: 451.851; P=16: 226.490; P=32: 122.843.
+  Waktu @98,304 MHz = siklus x 10,17 ns -> P=16: ~2,30 ms (BERGANTUNG Fmax; Fmax belum diukur, Fase 6).
+- Catatan: sebagian besar tidak dioptimalkan (tulis requant tidak tumpang-tindih dengan MAC), sumber daya belum diukur.
