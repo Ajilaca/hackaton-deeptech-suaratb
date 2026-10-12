@@ -1,6 +1,6 @@
 # Kalibrasi Fase 0 pada audio NYATA (perekam, Zambia CIDRZ)
 
-Dihasilkan `python -m golden.calibrate_real` dari 1764 klip batuk (hasil detektor golden) pada 150 rekaman unik. **params.py tidak diubah**; angka di bawah adalah masukan keputusan.
+Dihasilkan `python -m golden.analysis.calibrate_real` dari 1764 klip batuk (hasil detektor golden) pada 150 rekaman unik. **params.py tidak diubah**; angka di bawah adalah masukan keputusan.
 
 ## Tingkat sinyal
 RMS per hop (LSB int16): p10/p50/p90/p99 = 6/15/78/1103

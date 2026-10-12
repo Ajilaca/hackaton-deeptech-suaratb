@@ -7,7 +7,7 @@ dihitung dari angka lain diberi label.
 - Referensi: Vivado 2026.1, **XC7A35T-1** (`xc7a35tcpg236-1`), `synth_design -mode out_of_context`, lalu `opt_design`,
   `place_design`, `route_design`. Clock 10 ns (100 MHz) dan 6,667 ns (150 MHz) pada port `clk`; **tanpa constraint I/O dan tanpa MMCM** (tidak ada pin).
   Timing = jalur register ke register dalam inti.
-- Model: bobot terlatih `model_v2` (ROM isi nyata), P = 8 / 16 / 32 (paket konfigurasi dibangkitkan dari `golden/gen_cnn_rom.py`).
+- Model: bobot terlatih `model_v2` (ROM isi nyata), P = 8 / 16 / 32 (paket konfigurasi dibangkitkan dari `golden/gen/gen_cnn_rom.py`).
 - Yosys: `synth_xilinx -family xc7` setelah `sv2v` (Yosys 0.33 tidak membaca `import pkg::*` dan `return` dalam fungsi); tanpa
   place and route, tanpa timing.
 - Skrip: `target/artix7/{prep_synth.py,synth.tcl,run_sweep.sh}`, `target/yosys/synth.sh`. Laporan lengkap di

@@ -1,7 +1,7 @@
 # Hasil kalibrasi Fase 0 (audio SINTETIS)
 
-Dihasilkan oleh `python -m golden.calibrate` (mentah: `golden/out/phase0_calibration.json`, tidak di-commit).
-Generator: `golden/synth.py` (derau berwarna + letupan berformant bukan batuk klinis). Angka ini menunjukkan
+Dihasilkan oleh `python -m golden.analysis.calibrate` (mentah: `golden/out/phase0_calibration.json`, tidak di-commit).
+Generator: `golden/gen/synth.py` (derau berwarna + letupan berformant bukan batuk klinis). Angka ini menunjukkan
 perilaku aritmetika, BUKAN kinerja klinis, dan harus diulang pada dataset nyata.
 
 ## Ensemble

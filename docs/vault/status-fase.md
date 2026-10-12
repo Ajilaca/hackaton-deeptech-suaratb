@@ -1,7 +1,7 @@
 # Status fase
 
-**Status (2026-10-12): Fase 0-6 selesai; versi 150 MHz (`optimized`) dan remodeling model (`remodel`) selesai. Sisa: Fase T (regresi
-penuh terpadu), Fase 7 (papan, bila diumumkan), Fase 8 (benchmark CPU dan angka akhir proposal).**
+**Status (2026-10-12): Fase 0-6 selesai; versi 150 MHz (`optimized`) dan remodeling model (`remodel`) selesai. Fase T selesai
+(regresi terpadu 20/20 lulus di Icarus). Sisa: Fase 7 (papan, bila diumumkan), Fase 8 (benchmark CPU dan angka akhir proposal).**
 
 | Fase | Status | Hasil utama |
 |---|---|---|
@@ -13,7 +13,7 @@ penuh terpadu), Fase 7 (papan, bila diumumkan), Fase 8 (benchmark CPU dan angka 
 | 5 | Selesai | `suaratb_top`: mode dataset (UART) dan mikrofon (I2S), bit-exact ujung ke ujung |
 | 6 | Selesai | Vivado XC7A35T-1: 100 MHz terpenuhi (Fase 6) dan 150 MHz (`optimized`, K-22); Yosys sebagai pembanding; `sintesis.md` |
 | Remodel | Selesai (eksploratori) | Embedding HeAR/OPERA, protokol evaluasi tetap, uji permutasi, distilasi ke CNN golden; K-23, `model.md` §5d-5e |
-| T | Parsial | Regresi per modul dan ujung ke ujung dijalankan di Icarus; regresi terpadu `make test FASE_T=1` belum satu kali penuh |
+| T | Selesai | `make test FASE_T=1 SIM=icarus` (2026-10-12): 20 tes `tb/` lulus, 0 gagal, 45 menit 45 detik; 67 tes `golden/` lulus. Model: bobot acak terkalibrasi (`test_top` bobot distilasi diuji terpisah). Hanya simulasi Icarus, bukan papan; Verilator tidak dipakai (cocotb 2.1 tidak cocok dengan Verilator 5.020) |
 | 7 | Belum | Papan panitia belum diumumkan |
 | 8 | Belum | Benchmark vs CPU dan angka akhir |
 
@@ -22,15 +22,15 @@ Cabang git (berantai): `fase0-2` -> `fase3` -> `fase4` -> `fase5` -> `fase6` -> 
 ## Catatan kronologis (riwayat pembaruan)
 
 ## Sebelum Fase 1 / yang masih terbuka
-1. `data/raw` kosong: ulangi `python -m golden.calibrate --data data/raw` untuk FEAT_OFFSET, detektor, dan AUROC
+1. `data/raw` kosong: ulangi `python -m golden.analysis.calibrate --data data/raw` untuk FEAT_OFFSET, detektor, dan AUROC
    (syarat "AUROC turun ≤ 0,01" untuk lebar FFT belum diperiksa).
 2. Requant/bobot CNN: dari Fase M (QAT); golden hanya punya model acak + kalibrator.
 3. Tafsiran segmen 50 frame (K-03) dan jadwal skala FFT `first1_0` (K-04): perlu konfirmasi.
 4. Kapasitas perangkat dan jenis FPGA panitia: dari ingatan / belum diumumkan.
 5. Mikrofon INMP441 mengeluarkan 24 bit; spesifikasi memakai 16 bit teratas. Bila bit bawah dipakai, derau
    kuantisasi masukan turun dan lebar FFT mungkin perlu dihitung ulang (tidak dievaluasi).
-6. Makefile belum ada (Fase 1). Perintah: `.venv/bin/python -m pytest golden`, `-m golden.gen_tables`,
-   `-m golden.gen_vectors`, `-m golden.budget`, `-m golden.calibrate`.
+6. Makefile belum ada (Fase 1). Perintah: `.venv/bin/python -m pytest golden`, `-m golden.gen.gen_tables`,
+   `-m golden.gen.gen_vectors`, `-m golden.analysis.budget`, `-m golden.analysis.calibrate`.
 
 ## Pembaruan data nyata (2026-10-11)
 - `data/raw` -> `/data/suaratb/raw`; perekam (281 WAV) selesai, Phone A (3 klinik, 26,3 GB) masih diunduh.
@@ -38,7 +38,7 @@ Cabang git (berantai): `fase0-2` -> `fase3` -> `fase4` -> `fase5` -> `fase6` -> 
 - `kalibrasi-data-nyata.md`: pada audio nyata W=22 sudah lolos ambang K-04 (0,029 oktaf), W=24 0,007; W=18 gagal (0,79).
   Usulan `FEAT_OFFSET` 8265 (jenuh 0,2%) menggantikan 6690. params.py BELUM diubah, menunggu keputusan pengguna.
 - Baseline awal (perekam saja, 244 peserta) DIHAPUS atas permintaan pengguna; hanya model lengkap (perekam + Phone A, `model.md`) yang dipakai. Temuan awal: AUROC peserta 0,41-0,43, model sederhana ≈ label-acak.
-- Berkas baru belum di-commit: `golden/calibrate_real.py`, `model/{build_data,baseline,mil_train,fusion,describe_data}.py`, dokumen vault.
+- Berkas baru belum di-commit: `golden/analysis/calibrate_real.py`, `model/{build_data,baseline,mil_train,fusion,describe_data}.py`, dokumen vault.
 
 ## Ringkasan 2026-10-11 (setelah Fase M/1/2)
 - Data: perekam + Phone A diunduh (397/398 berkas; 1 tanpa ekstensi `.wav` dilewati); 664 rekaman -> 7.187 klip berlabel,
@@ -75,11 +75,11 @@ Cabang git (berantai): `fase0-2` -> `fase3` -> `fase4` -> `fase5` -> `fase6` -> 
 - RTL: `rtl/dsp/{window,fft512,power,mel,log_q,quant,dsp_chain,feat_buf}.sv`; `rtl/files.f` diperbarui.
 - TB: `tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,feat_buf}.py`, `tb/common/drive.py`; vektor memakai
   `tb/vectors/{window,fft512,power,mel,log_q,quant,frontend}` (sudah identik dengan keluaran `gen_vectors`).
-- Model Python jadwal/alamat: `golden/test_fft_schedule.py`, `golden/test_dsp_addressing.py` (67 tes golden lulus).
+- Model Python jadwal/alamat: `golden/tests/test_fft_schedule.py`, `golden/tests/test_dsp_addressing.py` (67 tes golden lulus).
 - Tes unit Fase 2 dan 3 dijalankan (Icarus, K-19): 12 modul LULUS bit-exact terhadap golden. Berikutnya: Fase 4 (CNN, K-17).
 
 ## Fase 4 ditulis dan dites unit (2026-10-11)
-- RTL `rtl/cnn/*.sv`, TB `tb/test_{requant,gap,cnn_top,cnn_sweep,cnn_trained}.py`, generator `golden/gen_cnn_rom.py`.
+- RTL `rtl/cnn/*.sv`, TB `tb/test_{requant,gap,cnn_top,cnn_sweep,cnn_trained}.py`, generator `golden/gen/gen_cnn_rom.py`.
 - cnn_top bit-exact vs golden (bobot acak, bobot terlatih model_v2, P=8/16/32). Siklus: 451.851 / 226.490 / 122.843.
 - Berikutnya: Fase 5 (top, csr, uart, mode dataset/mikrofon), lalu Fase T dan 6.
 

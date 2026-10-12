@@ -1,8 +1,8 @@
 # Keputusan Fase 0
 
-Format: ID, keputusan, alasan, alternatif/risiko. Semua angka berasal dari `python -m golden.calibrate`
+Format: ID, keputusan, alasan, alternatif/risiko. Semua angka berasal dari `python -m golden.analysis.calibrate`
 (hasil mentah: `golden/out/phase0_calibration.json`, di .gitignore) dan `pytest golden`.
-**Seluruh kalibrasi memakai audio SINTETIS** (`golden/synth.py`); dataset Kaggle belum ada di `data/raw`.
+**Seluruh kalibrasi memakai audio SINTETIS** (`golden/gen/synth.py`); dataset Kaggle belum ada di `data/raw`.
 
 ## K-01 Aritmetika
 Pembulatan = tambah setengah lalu geser aritmetik (floor(v + 0,5)); saturasi eksplisit; int64 di numpy.
@@ -118,7 +118,7 @@ Kapasitas perangkat dari ingatan, belum diverifikasi.
   dan refractory identik golden. `seg_done` memberi tahu feat_buf (Fase 3) bahwa 50 kolom terakhir = segmen.
 
 ## K-14 FEAT_OFFSET dari audio nyata (6690 -> 8265)
-Dihitung oleh `golden.calibrate_real` pada 1.764 klip batuk nyata (perekam). Dengan 6690 (sintetis) 2,0% elemen jenuh
+Dihitung oleh `golden.analysis.calibrate_real` pada 1.764 klip batuk nyata (perekam). Dengan 6690 (sintetis) 2,0% elemen jenuh
 int8, dengan 8265 0,2%. Model CNN Fase M dilatih pada fitur dengan offset ini, sehingga `params.py`, tabel, paket SV,
 dan vektor ikut diubah. PROVISIONAL: gain mikrofon INMP441 berbeda; harus dihitung ulang pada audio perangkat.
 FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum diputuskan).
@@ -164,9 +164,9 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   (aman; urutan indeks sudah cukup, margin sengaja); keluaran bin tiap `OUT_GAP`=4 siklus (kontrak: `power` >= 1, `mel` >= 3).
 - Perkiraan sumber daya (ESTIMASI, bukan laporan alat): pengali window 1, fft 4 (24x16), power 2 (24x24), mel 1 (48x12);
   RAM FFT 24 Kbit, RAM fitur 20 Kbit, akumulator mel 40 x 58 bit di register.
-- Verifikasi tanpa simulasi RTL (aturan 3): model Python jadwal FFT (`golden/test_fft_schedule.py`: bit-exact vs golden,
+- Verifikasi tanpa simulasi RTL (aturan 3): model Python jadwal FFT (`golden/tests/test_fft_schedule.py`: bit-exact vs golden,
   waktu tulis a'/b', pengalamatan in-place, indeks twiddle, geser stage) dan model alamat window/mel/feat_buf
-  (`golden/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
+  (`golden/tests/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
   feat_buf}.py`) dan baru dijalankan di Fase T. RTL belum di-lint.
   Pembaruan (K-19): tes unit modul dijalankan 2026-10-11 dan lulus; ini verifikasi per modul, bukan regresi terpadu.
 
@@ -185,7 +185,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
 
 ## K-20 Fase 4: CNN output-stationary ditulis dan lulus tes unit (2026-10-11)
 - Modul: `rtl/cnn/{cnn_cfg_pkg,pe_array,requant,gap,cnn_ctrl,cnn_top}.sv`. Bentuk layer/alamat ROM dari
-  `golden/gen_cnn_rom.py` (sumber tunggal `params.layer_descs()`, P dari params); ROM dikemas P lane (`cnn_wrom/bias/rq.mem`).
+  `golden/gen/gen_cnn_rom.py` (sumber tunggal `params.layer_descs()`, P dari params); ROM dikemas P lane (`cnn_wrom/bias/rq.mem`).
 - Pool pada akumulator sebelum requant (bit-exact dengan golden); satu unit requant berurutan; GAP unit sendiri; FC memakai
   pe_array yang sama; deskriptor sebagai fungsi paket (bukan array parameter, kompatibel Icarus).
 - HASIL SIMULASI (Icarus, bukan laporan alat): logit cnn_top == golden bit-exact untuk 5 kasus sintetis (bobot acak),

@@ -14,18 +14,18 @@ Baca berurutan: `vault/status-fase.md` -> `vault/spesifikasi.md` -> `vault/keput
 | `vault/verifikasi.md` | Infrastruktur verifikasi Fase 1 |
 | `vault/sintesis.md` | Hasil sintesis Vivado XC7A35T-1 dan Yosys: sumber daya, timing, sapuan P, versi 150 MHz |
 | `result/result.md` | Laporan hasil lengkap (dan `result/result.pdf`) |
-| `vault/anggaran-fase0.md` | Keluaran `golden/budget.py`: memori, pengali, siklus, muat/tidak per perangkat |
+| `vault/anggaran-fase0.md` | Keluaran `golden/analysis/budget.py`: memori, pengali, siklus, muat/tidak per perangkat |
 
 ## Kode
 | Jalur | Fungsi |
 |---|---|
 | `golden/params.py` | Sumber tunggal parameter, deskriptor layer, paket SV |
 | `golden/blocks/` | preemph, window, fft512, power, mel, log_q, quant, cnn, cough_det, frontend (+fixed) |
-| `golden/gen_tables.py` | ROM .mem + paket SV -> `golden/tables/` |
-| `golden/gen_vectors.py` | Vektor uji sintetis per blok -> `tb/vectors/` (CNN: bobot ACAK) |
-| `golden/budget.py` | Anggaran dan penilaian muat |
-| `golden/calibrate.py` | Eksperimen Fase 0 (`--data data/raw` untuk audio nyata) |
-| `golden/synth.py` | Audio sintetis (bukan klinis) |
+| `golden/gen/gen_tables.py` | ROM .mem + paket SV -> `golden/tables/` |
+| `golden/gen/gen_vectors.py` | Vektor uji sintetis per blok -> `tb/vectors/` (CNN: bobot ACAK) |
+| `golden/analysis/budget.py` | Anggaran dan penilaian muat |
+| `golden/analysis/calibrate.py` | Eksperimen Fase 0 (`--data data/raw` untuk audio nyata) |
+| `golden/gen/synth.py` | Audio sintetis (bukan klinis) |
 | `golden/test_*.py` | 61 tes pytest |
 
 Pemetaan golden -> RTL (Fase 2-5): preemph->`preemph.sv`, window->`window.sv`, fft512->`fft512.sv`, power->`power.sv`,
@@ -36,6 +36,6 @@ mel->`mel.sv`, log_q->`log_q.sv`, quant->`quant.sv`, cough_det->`cough_det.sv`, 
 |---|---|
 | `model/{dataset,audio_io,prep_audio,build_data}.py` | Indeks data, muat WAV 16 kHz, segmentasi dengan detektor golden, fitur + split per peserta |
 | `model/{mil_train,fusion,export}.py` | Pelatihan MIL, fusi gejala, PTQ/QAT -> QModel golden |
-| `golden/calibrate_real.py` | Kalibrasi pada klip nyata |
+| `golden/analysis/calibrate_real.py` | Kalibrasi pada klip nyata |
 | `rtl/common/*`, `rtl/{audio,detect}/*`, `rtl/files.f` | Primitif umum + front-end Fase 2 |
 | `tb/common/*`, `tb/test_*.py`, `Makefile` | Infrastruktur verifikasi (dijalankan di Fase T) |

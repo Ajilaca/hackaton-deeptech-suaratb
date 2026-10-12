@@ -222,7 +222,7 @@ rendah (R² 0,16). Kuantisasi int8 turun 0,008 (lulus); RTL `cnn_top` dan `suara
 |---|---|
 | Data besar (CODA 300+ positif) atau pengumpulan prospektif dengan INMP441 | Satu-satunya jalan mengubah kesimpulan "belum terbukti" |
 | Validasi HeAR/distilasi pada klinik/populasi independen | Menjawab jalan pintas klinik dan nilai tambah di atas gejala klinis |
-| Regresi terpadu (Fase T), seed sweep, constraint I/O, papan panitia (Fase 7) | Menutup batas hardware |
+| Seed sweep, constraint I/O, papan panitia (Fase 7); regresi terpadu Fase T sudah lulus di simulasi | Menutup batas hardware |
 | Benchmark vs CPU (Fase 8) | Angka akhir latensi/energi |
 
 ## Lampiran: lokasi bukti

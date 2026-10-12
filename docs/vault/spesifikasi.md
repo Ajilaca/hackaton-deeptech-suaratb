@@ -29,7 +29,7 @@ Alasan tiap nilai: `keputusan.md` (K-xx).
 | Parameter | Nilai |
 |---|---|
 | Arsitektur | Conv3x3 same (16/32/32) -> requant -> ReLU -> MaxPool2x2, GAP, FC 32->16 (ReLU), FC 16->1 |
-| Bobot / bias / MAC | 14.496 / 97 / 3.698.448 (diverifikasi `golden/test_params.py`) |
+| Bobot / bias / MAC | 14.496 / 97 / 3.698.448 (diverifikasi `golden/tests/test_params.py`) |
 | Akumulator | 24 bit bertanda; batas terburuk 288x127x128 = 4.681.728 < 2^23 (+margin bias ~3,7 juta) (K-10) |
 | Requant | y = (acc·M0 + 2^(s-1)) >> s; M0 Q15 tak bertanda; ReLU+saturasi [0,127]; FC akhir int16 tanpa ReLU |
 | GAP | sum · 1092 (=round(2^15/30)) + 2^14 >> 15 atas peta 5x6 |

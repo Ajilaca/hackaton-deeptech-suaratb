@@ -1,4 +1,4 @@
-# Anggaran Fase 0 (dihasilkan oleh `python -m golden.budget`)
+# Anggaran Fase 0 (dihasilkan oleh `python -m golden.analysis.budget`)
 
 > Hitungan ANALITIK dari parameter. Bukan hasil sintesis. Kapasitas perangkat: dari ingatan, verifikasi di datasheet.
 
