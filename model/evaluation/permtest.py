@@ -30,7 +30,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
 from model.evaluation import protocol as P
-from model.embed_pretrained import participant_matrix
+from model.pretrained.embed_pretrained import participant_matrix
 
 warnings.filterwarnings("ignore")
 CANDS = ["hear", "operaCT", "operaCE"]

@@ -1,7 +1,7 @@
 """E3: embedding OPERA (CE, CT) per rekaman dan evaluasi dengan protokol E0.
 
-    python -m model.embed_pretrained extract --model operaCE        # -> features/emb_operaCE.npz
-    python -m model.embed_pretrained eval --models operaCE operaCT   # -> reports/embedding-pralatih.md
+    python -m model.pretrained.embed_pretrained extract --model operaCE        # -> features/emb_operaCE.npz
+    python -m model.pretrained.embed_pretrained eval --models operaCE operaCT   # -> reports/embedding-pralatih.md
 
 Resep OPERA (apa adanya): rekaman utuh, trim hening (frame 100 ms), mel 64 pita 50-8000 Hz (n_fft 1024, hop 512) dinormalisasi
 min-max, masuk encoder tanpa dipotong. Bobot dimuat dengan torch.load(weights_only=True) dari $SUARATB_DATA/ext/opera_ck.

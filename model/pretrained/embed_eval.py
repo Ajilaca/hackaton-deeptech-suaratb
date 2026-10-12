@@ -1,4 +1,4 @@
-"""Evaluasi embedding VGGish vs statistik log-mel (lihat model/embed_test.py)."""
+"""Evaluasi embedding VGGish vs statistik log-mel (lihat model/pretrained/embed_test.py)."""
 from __future__ import annotations
 import pathlib
 import numpy as np

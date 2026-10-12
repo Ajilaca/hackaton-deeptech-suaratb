@@ -16,7 +16,7 @@ from sklearn.model_selection import StratifiedKFold
 from golden import paths
 from model.evaluation import protocol as P
 from model.clinical_models.clinical import lr
-from model.embed_pretrained import participant_matrix
+from model.pretrained.embed_pretrained import participant_matrix
 
 warnings.filterwarnings("ignore")
 

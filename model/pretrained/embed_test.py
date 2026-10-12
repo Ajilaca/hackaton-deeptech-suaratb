@@ -1,7 +1,7 @@
 """Langkah 3 (uji murah): apakah embedding VGGish pralatih membawa sinyal TB yang tidak hanya jenis kelamin/perangkat?
 
-    python -m model.embed_test embed          # hitung embedding 128-d per klip (Zambia dan TBscreen)
-    python -m model.embed_test eval           # LR di atas embedding peserta, CV + residu sex/usia + lintas-dataset
+    python -m model.pretrained.embed_test embed          # hitung embedding 128-d per klip (Zambia dan TBscreen)
+    python -m model.pretrained.embed_test eval           # LR di atas embedding peserta, CV + residu sex/usia + lintas-dataset
 
 Guru = VGGish (bobot dari TBscreen_code.zip, Zenodo 10431329, CC BY 4.0). Masukan: segmen 8240 sampel (16 kHz) diberi
 nol sampai 15.600 sampel (96 frame = 0,96 s). Keluaran = 128-d (setelah ReLU, varian PyTorch TBscreen). Bobot hanya dimuat
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     if sys.argv[1] == "embed":
         cmd_embed()
     else:
-        from model.embed_eval import main
+        from model.pretrained.embed_eval import main
         main()

@@ -1,6 +1,6 @@
 """E4: HeAR lintas-perangkat pada peserta yang sama (Phone A, B, C): latih perangkat X, uji perangkat Y.
 
-    python -m model.cross_device_hear [--reps 5]
+    python -m model.pretrained.cross_device_hear [--reps 5]
 
 Embedding per peserta = rata-rata klip (maks 6 klip batuk teratas per peserta per perangkat). Lipatan = protokol E0 (per peserta;
 peserta uji tidak pernah ada di latih, di perangkat mana pun). Metrik: AUROC terstratifikasi jenis kelamin per ulangan, dirata-rata,
