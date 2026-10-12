@@ -33,3 +33,11 @@ Total berkas WAV: 678; tidak terbaca: 0; tanpa barcode di nama: 14.
 - Satu WAV = satu sesi (±40-70 detik di perekam) berisi banyak batuk; 21 peserta punya lebih dari satu rekaman.
 - Beberapa berkas bernama `... (1).wav` (duplikat nama); unduhan via `kaggle -f` gagal untuk sebagian, lihat `scripts/dl_kaggle_phoneA.log`.
 - Positif per klinik sangat tidak seimbang (Chainda South: 1 positif di perekam).
+
+## Audit cakupan (2026-10-12)
+- Rilis Kaggle memuat 1.481 berkas audio (daftar berkas Kaggle sama dengan yang diunduh); angka "664 peserta" pada deskripsi tidak ada
+  di rilis. Barcode unik berlabel dengan audio: **364 (60 positif)**; pemulihan barcode salah ketik tidak menambah peserta.
+- Berkas tidak terpetakan: 30 bernama timestamp dan 98 dengan barcode tanpa pasangan metadata (36 barcode); tidak dipulihkan
+  tanpa menebak. Audit: `model/data/audit_data.py`.
+- Fase M memakai perekam + Phone A (360 peserta, 58 positif); embedding HeAR memakai Phone A/B/C (364 peserta).
+
