@@ -1,17 +1,25 @@
 # Status fase
 
-**Fase aktif: M, 1, 2 selesai (2026-10-11). Berikutnya Fase 3 (DSP) setelah pengguna meminta; Fase 1-5 hanya menulis kode.**
-Diperbarui: 2026-10-10.
+**Status (2026-10-12): Fase 0-6 selesai; versi 150 MHz (`optimized`) dan remodeling model (`remodel`) selesai. Sisa: Fase T (regresi
+penuh terpadu), Fase 7 (papan, bila diumumkan), Fase 8 (benchmark CPU dan angka akhir proposal).**
 
-| Fase | Status | Catatan |
+| Fase | Status | Hasil utama |
 |---|---|---|
-| 0 | Selesai, 61 tes golden lulus | Parameter dibekukan di `golden/params.py`; ⚠ konstanta data-dependen provisional |
-| M | Selesai (pipeline), HASIL KLINIS NEGATIF | 360 peserta/58 positif; batuk saja AUROC 0,562 ≈ nol permutasi; int8 golden vs float Δ +0,001; bobot di `model/out/model_v2` (tidak di-commit). Lihat `model.md` |
-| 1 | Ditulis (belum dijalankan) | Makefile, rtl/common (rom/ram/fifo/sva), tb/common (vec, cocotb_utils, runner), `docs/vault/verifikasi.md` |
-| 2 | Ditulis (belum dijalankan) | `i2s_rx`, `preemph`, `frame_buf`, `cough_det` + 4 testbench cocotb + vektor golden |
-| 3-5 | Belum | Tulis saja, jangan jalankan simulasi |
-| T | Belum | |
-| 6 | Belum | Vivado belum diperiksa pada sesi ini |
+| 0 | Selesai | Parameter dibekukan di `golden/params.py`; 67 tes golden lulus; kalibrasi pada audio nyata (K-14) |
+| M | Selesai (pipeline); hasil klinis audio dari-nol negatif | Kuantisasi int8 turun 0,001; model dari-nol ~0,56; lihat `model.md` |
+| 1-2 | Selesai | Infrastruktur verifikasi; `i2s_rx`, `preemph`, `frame_buf`, `cough_det` bit-exact |
+| 3 | Selesai | `window`, `fft512`, `power`, `mel`, `log_q`, `quant`, `feat_buf` bit-exact |
+| 4 | Selesai | CNN output-stationary, P = 8/16/32, bit-exact (bobot acak dan terlatih) |
+| 5 | Selesai | `suaratb_top`: mode dataset (UART) dan mikrofon (I2S), bit-exact ujung ke ujung |
+| 6 | Selesai | Vivado XC7A35T-1: 100 MHz terpenuhi (Fase 6) dan 150 MHz (`optimized`, K-22); Yosys sebagai pembanding; `sintesis.md` |
+| Remodel | Selesai (eksploratori) | Embedding HeAR/OPERA, protokol evaluasi tetap, uji permutasi, distilasi ke CNN golden; K-23, `model.md` §5d-5e |
+| T | Parsial | Regresi per modul dan ujung ke ujung dijalankan di Icarus; regresi terpadu `make test FASE_T=1` belum satu kali penuh |
+| 7 | Belum | Papan panitia belum diumumkan |
+| 8 | Belum | Benchmark vs CPU dan angka akhir |
+
+Cabang git (berantai): `fase0-2` -> `fase3` -> `fase4` -> `fase5` -> `fase6` -> `optimized` -> `remodel` -> `finalisasi`; `main` mengikuti cabang terbaru yang digabung.
+
+## Catatan kronologis (riwayat pembaruan)
 
 ## Sebelum Fase 1 / yang masih terbuka
 1. `data/raw` kosong: ulangi `python -m golden.calibrate --data data/raw` untuk FEAT_OFFSET, detektor, dan AUROC
@@ -74,3 +82,11 @@ Diperbarui: 2026-10-10.
 - RTL `rtl/cnn/*.sv`, TB `tb/test_{requant,gap,cnn_top,cnn_sweep,cnn_trained}.py`, generator `golden/gen_cnn_rom.py`.
 - cnn_top bit-exact vs golden (bobot acak, bobot terlatih model_v2, P=8/16/32). Siklus: 451.851 / 226.490 / 122.843.
 - Berikutnya: Fase 5 (top, csr, uart, mode dataset/mikrofon), lalu Fase T dan 6.
+
+## Fase 5-6, optimized, dan remodel (2026-10-11 s.d. 12)
+- Fase 6: Vivado P = 8/16/32 pada 100 MHz terpenuhi setelah perbaikan timing FFT dan `cough_det`; Yosys 0,33 via sv2v sebagai pembanding.
+- `optimized`: pipeline ulang CNN, DSP, front-end, detektor; 150 MHz terpenuhi (WNS +0,111 / +0,222 / +0,023 ns untuk P = 8/16/32);
+  bit-exact (`test_top`); K-22 (clock inti 147,456 MHz).
+- Remodel: audit data (364 peserta/60 positif, rilis Kaggle lengkap), protokol evaluasi tetap, HeAR/OPERA, uji permutasi statistik
+  maksimum, lintas-perangkat, leave-one-clinic-out, distilasi HeAR ke CNN golden (0,654 vs guru 0,672), kuantisasi int8 lulus, RTL
+  bit-exact dengan bobot murid. Keputusan: K-23. Kode dirapikan ke subpaket `model/{data,scratch,clinical_models,evaluation,pretrained,distillation}`.
