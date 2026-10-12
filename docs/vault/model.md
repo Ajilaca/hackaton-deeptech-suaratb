@@ -9,6 +9,10 @@ Bobot, fitur, dan checkpoint ada di `/data/suaratb` dan tidak masuk repo. Keputu
   jenis kelamin; residu ≈ 0,58-0,60). Target 0,70 batuk-saja dan 0,80 fusi **tidak tercapai dan tidak diklaim**.
 - **Gejala klinis saja AUROC 0,77 (1.828 peserta, 205 positif); audio tidak menambah apa pun** (Δ +0,003, CI -0,02..+0,03).
   Standar WHO TPP triase (sens ≥ 90%, spes ≥ 70%) **tidak dipenuhi** dan tidak diklaim (lihat §5c).
+- **Embedding pralatih (HeAR, OPERA) memberi sinyal audio di atas nol permutasi** setelah jenis kelamin dikendalikan (HeAR AUROC strat.
+  0,71, p disesuaikan 0,002), tetapi tambahan di atas klinis kecil dan tidak presisi (Δ +0,04, CI mencakup 0), dan tidak konsisten
+  lintas klinik (§5d). Distilasi ke CNN int8 **dicoba** sebagai percobaan eksploratori: murid mewarisi sebagian besar
+  sinyal guru (AUROC strat. 0,654 vs guru 0,672), batas klaimnya sama (§5e, K-23).
 - Hasil ini sejalan dengan literatur (lintas-dataset sering < 0,6; Zhang dkk., arXiv 2608.25846). Alat adalah triase
   pendukung, bukan diagnosis.
 
@@ -160,6 +164,81 @@ kuesioner pada pedoman WHO 2021: sensitivitas 42%. Titik operasi dari skor klini
 Posisi yang dapat dipertahankan: alat **prioritas rujukan**, bukan pengganti tes dan tidak memenuhi TPP. Memenuhi TPP butuh
 data yang lebih besar dan beragam serta bukti sinyal akustik yang belum ada pada data ini.
 
+### 5d. Embedding pralatih dengan protokol evaluasi tetap (2026-10-12; K-23)
+
+Audit data: rilis Kaggle memuat 1.481 berkas audio (sama dengan yang diunduh); angka "664 peserta" pada deskripsi dataset tidak ada
+di rilis. Peserta berlabel dengan audio: **364 (60 positif)**; pemulihan barcode salah ketik tidak menambah peserta.
+
+Protokol: unit = peserta; CV 5-lipat, stratifikasi label x klinik x jenis kelamin; skor klinis dilatih hanya pada peserta tanpa audio;
+metrik utama = AUROC terstratifikasi jenis kelamin dan Δ fusi - klinis; nol = label diacak dalam klinik x jenis kelamin dengan seluruh
+pipeline diulang. Embedding: HeAR (jendela 2 s di sekitar onset detektor golden, maks 6 klip per peserta), OPERA-CE dan OPERA-CT
+(rekaman utuh). Klasifikasi: LR linear. Semua kandidat dilaporkan.
+
+| Fitur | AUROC strat. jenis kelamin | Nol p95 / maks | Δ vs klinis (CI 95% bootstrap) |
+|---|---|---|---|
+| Statistik log-mel (pembanding) | 0,599 | 0,619 / 0,672 | -0,002 (-0,032..+0,029) |
+| HeAR | 0,675 | 0,561 / 0,582 | +0,015 (-0,023..+0,058) |
+| OPERA-CT | 0,677 | 0,609 / 0,644 | +0,029 (-0,011..+0,068) |
+| OPERA-CE | 0,606 | 0,604 / 0,612 | +0,013 (-0,013..+0,041) |
+
+Uji permutasi final (1.000 permutasi, statistik maksimum atas tiga kandidat, permutasi sama untuk semua kandidat, C tetap 0,03
+ditetapkan sebelum angka final; hasil serupa untuk C = 0,01 dan 0,1):
+
+| Kandidat | AUROC strat. | p disesuaikan (label) | Δ di atas klinis | p disesuaikan (Δ) | CI bootstrap Δ |
+|---|---|---|---|---|---|
+| HeAR | 0,709 | 0,002 | +0,039 | 0,003 | -0,011..+0,092 |
+| OPERA-CT | 0,664 | 0,006 | +0,025 | 0,015 | -0,017..+0,064 |
+| OPERA-CE | 0,621 | 0,089 | +0,022 | 0,023 | -0,003..+0,048 |
+
+Pemeriksaan:
+- **Kontrol negatif** (fitur Gaussian acak, dua seed): tidak ada p disesuaikan mendekati 0,05; uji tidak menghasilkan positif palsu.
+- **Lintas-perangkat** (HeAR, peserta sama, Phone A/B/C): AUROC strat. 0,62-0,69 di 9 pasangan latih/uji. Menunjukkan ketahanan terhadap
+  mikrofon, bukan terhadap populasi (peserta dan isi batuk sama).
+- **Jalan pintas**: embedding HeAR memprediksi jenis kelamin AUROC 0,955 dan klinik (Kan vs lain) 0,875. AUROC skor audio dalam strata:
+  Kan 0,728 (49 positif), Cha 0,644 (11), laki-laki 0,691, perempuan 0,632 (15).
+- **Leave-one-clinic-out** (strat. jenis kelamin): Kan->Cha HeAR 0,547 / OPERA-CT 0,731 / OPERA-CE 0,638; Cha->Kan HeAR 0,617 /
+  OPERA-CT 0,555 / OPERA-CE 0,530. Tidak ada kandidat yang melewati p95 nol di kedua arah; Cha hanya 11 positif (CI +-0,2).
+
+Kesimpulan: ada indikasi sinyal audio dan tambahan kecil di atas gejala klinis, **belum terbukti presisi dan belum konsisten lintas
+klinik**; tidak ada data independen. Bukan klaim klinis. Kriteria distilasi yang ditetapkan sebelumnya tidak terpenuhi (K-23);
+distilasi tetap dicoba secara eksploratori (§5e).
+
+### 5e. Distilasi HeAR -> CNN golden (eksploratori, 2026-10-12; K-23)
+
+Tujuan: mengetahui seberapa besar sinyal guru yang bisa dipindahkan ke jaringan yang muat di akselerator. Bukan bagian kriteria
+praregistrasi. Murid = arsitektur hardware (Conv16/32/32, GAP, FC32->16; 14.496 bobot); masukan log-mel 0,5 s (fitur hardware) vs
+guru 2 s. Distilasi memakai target 32 komponen PCA dari embedding HeAR per klip, TANPA label TB; PCA dan murid dilatih hanya pada klip
+peserta lipatan latih; probe LR (embedding 16-d rata-rata per peserta) di dalam lipatan protokol E0. 6.354 klip, 364 peserta, 60 positif.
+
+| Model | AUROC strat. jenis kelamin | Nol p95 / maks | p-empiris | Δ di atas klinis |
+|---|---|---|---|---|
+| Guru HeAR (klip yang sama) | 0,672 | 0,606 / 0,675 | 0,010 | +0,024 |
+| **Murid distilasi (16-d)** | **0,654** | 0,580 / 0,642 | 0,005 | +0,015 |
+| Kontrol: jaringan acak, tanpa pelatihan | 0,598 | 0,583 / 0,627 | 0,030 | +0,000 |
+| Kontrol: target teracak | 0,529 | 0,568 / 0,618 | 0,244 | -0,011 |
+| `model_v2` (supervised dari nol, §4) | ≈ 0,56 (mentah) | - | - | - |
+
+Jalan pintas (ulangan 0): embedding memprediksi jenis kelamin 0,867 (guru 0,953; jaringan acak 0,640) dan klinik Kan 0,655 (guru 0,896;
+acak 0,586). AUROC skor murid dalam Kan 0,735 (guru 0,725), dalam Cha 0,590 (11 positif), laki-laki 0,638, perempuan 0,687 (15 positif).
+Fidelitas komponen PCA pada klip uji rendah (R2 0,16): murid hanya mewarisi sebagian arah variasi guru.
+
+Pembacaan: distilasi mewarisi sebagian besar sinyal guru pada jaringan yang muat di hardware, dan jauh di atas model yang dilatih
+dari nol dengan label (0,56); kontrol menunjukkan peningkatan itu berasal dari distilasi, bukan arsitektur. Batasnya sama dengan guru:
+tambahan di atas klinis tidak signifikan, 364 peserta dari satu populasi, jenis kelamin tertangkap kuat. Bukan klaim klinis.
+
+Kuantisasi dan hardware (murid + probe terlipat menjadi FC 16->1; PTQ tanpa label; out-of-fold, ulangan 0 protokol E0):
+
+| Ukuran | Float | int8 golden | Selisih |
+|---|---|---|---|
+| AUROC strat. jenis kelamin | 0,653 | 0,645 | 0,008 (kriteria <= 0,02: lulus) |
+| AUROC mentah | 0,729 | 0,723 | 0,006 |
+
+Korelasi logit float vs int8 per lipatan 0,955-0,987 (lebih rendah dari `model_v2`, 0,991-0,999). Model akhir (murid pada semua klip,
+probe pada semua peserta): korelasi 0,988; puncak akumulator 138.084 (batas 24 bit 8.388.608). RTL `cnn_top` dengan bobot ini
+**bit-exact terhadap golden pada 8 klip nyata** (Icarus, P=16, 2026-10-12). Bobot di `$SUARATB_DATA/runs/model_distill` (tidak di-commit).
+`suaratb_top` dengan bobot ini juga **bit-exact terhadap golden** pada mode dataset (UART, 2 kasus) dan mode mikrofon
+(I2S -> detektor -> DSP -> CNN -> UART), Icarus, 2026-10-12. Belum dilakukan: sintesis ulang dengan bobot ini (ROM berukuran sama; sumber daya diperkirakan identik).
+
 ## 6. Batasan (wajib dibawa ke proposal)
 1. **Tidak ada klaim akurasi klinis.** AUROC batuk-saja tidak dapat dibedakan dari nol permutasi; setelah jenis kelamin dan
    usia dikendalikan sisa ≈ 0,58-0,60 (di batas keberartian untuk 58 positif).
@@ -169,7 +248,8 @@ data yang lebih besar dan beragam serta bukti sinyal akustik yang belum ada pada
 5. **Perangkat berbeda**: perekam 44,1 kHz dan telepon 192 kHz; belum ada data dari INMP441. `FEAT_OFFSET` provisional (K-14).
 6. **Satu populasi dan sedikit klinik** (3 klinik Lusaka); tidak ada uji prospektif; lintas-dataset tidak bermakna.
 7. **Fusi dengan gejala klinis** adalah perhitungan di host, bukan di perangkat; gejala saja sudah 0,73.
-8. Hanya VGGish yang diuji sebagai model pralatih (bukan CLAP/HeAR/OPERA); tidak dapat disimpulkan bahwa model lain gagal.
+8. Model pralatih yang diuji: VGGish (jendela salah, uji tidak sah), HeAR, OPERA-CE/CT (§5d); CLAP dan lainnya belum. Sinyal HeAR/OPERA
+   bercampur dengan klinik dan jenis kelamin (embedding memprediksi keduanya) dan hanya diuji pada 364 peserta dari satu populasi.
 9. Lisensi: Zambia ODbL-1.0 (syarat tambahan belum dibaca); TBscreen CC BY 4.0 (wajib sitasi). Bobot belum dipublikasikan.
 
 ## 7. Arti bagi proyek

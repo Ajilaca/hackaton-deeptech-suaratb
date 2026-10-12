@@ -211,3 +211,25 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
 - Default parameter `suaratb_top` (CLK_PER_BCLK=96, CLK_PER_BIT=853) belum diubah; nilai K-22 diberikan lewat parameter dari `target/`.
 - Batas: baru hasil Vivado OOC (tanpa I/O dan MMCM); tidak ada klaim jalan di papan.
 
+## K-23 Embedding pralatih: hasil, kriteria distilasi, dan distilasi dicoba (2026-10-12)
+- Uji: HeAR, OPERA-CE, OPERA-CT + LR linear pada 364 peserta (60 positif) dengan protokol tetap (AUROC strat. jenis kelamin, nol
+  permutasi dalam klinik x jenis kelamin, statistik maksimum atas tiga kandidat). Angka lengkap: `model.md` §5d.
+- Kriteria distilasi ditetapkan sebelum angka final (docstring `model/permtest.py`): (1) p label disesuaikan < 0,01; (2) p Δ < 0,05
+  DAN batas bawah CI bootstrap Δ > 0; (3) leave-one-clinic-out tidak di bawah p95 nol di kedua arah.
+- Hasil: (1) lolos untuk HeAR (0,002) dan OPERA-CT (0,006); (2) gagal untuk semuanya (p Δ 0,003-0,023 tetapi CI mencakup 0);
+  (3) gagal (hasil berbeda antar arah). Kontrol negatif (fitur acak) bersih.
+- Keputusan awal: menurut kriteria praregistrasi distilasi tidak dibenarkan sebagai klaim. **Distilasi tetap DICOBA sebagai percobaan
+  eksploratori** (permintaan pengguna, untuk mengetahui apa yang terjadi), terpisah dari kriteria di atas dan tidak mengubah klaim.
+- Hasil distilasi HeAR -> CNN golden (arsitektur hardware: Conv16/32/32, GAP, FC32->16, kepala pelatihan 16->32 komponen PCA; tanpa
+  label TB pada distilasi; per lipatan protokol E0; probe LR di dalam lipatan; 364 peserta, 60 positif, 2 ulangan):
+  murid 0,654 (nol p95 0,580, p 0,005) vs guru 0,672 pada klip yang sama; jaringan acak 0,598; target teracak 0,529; `model_v2`
+  supervised ~0,56. Fidelitas komponen PCA rendah (R2 0,16). Δ di atas klinis +0,015 (tidak signifikan). Jalan pintas: murid
+  memprediksi jenis kelamin 0,867 (guru 0,953) dan klinik Kan 0,655 (guru 0,896); AUROC dalam Kan 0,735.
+- Keputusan model hardware: murid distilasi adalah KANDIDAT bobot eksploratori menggantikan `model_v2` (arsitektur sama, tanpa
+  perubahan RTL). Kuantisasi int8 lulus (penurunan AUROC 0,008 <= 0,02) dan `cnn_top` bit-exact terhadap golden pada 8 klip nyata
+  (`model.md` §5e). Bobot murid dapat dipakai pada demo dengan label "eksploratori"; `test_top` penuh dan sintesis ulang belum dijalankan.
+- Pengamatan boleh dilaporkan: sinyal audio di atas nol permutasi dalam jenis kelamin dengan HeAR/OPERA-CT, tambahan kecil di atas
+  gejala klinis (Δ +0,02..+0,04), tahan lintas-mikrofon, tetapi belum presisi, belum konsisten lintas klinik, tanpa data independen.
+- Batas: satu populasi, 364 peserta, tanpa data independen; tidak ada klaim klinis dari murid.
+- Penguatan: lebih banyak peserta (CODA, K-15) dan validasi pada klinik/populasi lain, pasca-hackathon.
+
