@@ -37,11 +37,44 @@ Data, audio, fitur, bobot, dan proyek Vivado disimpan di luar repo (`$SUARATB_DA
 Mode mikrofon memakai detektor batuk untuk memilih segmen; mode dataset memproses 50 frame pertama klip yang dikirim lewat UART.
 Sumber: `rtl/sys/suaratb_top.sv`.
 
+## Cara kerja singkat
+1. **Akuisisi.** Mikrofon I2S (INMP441, 16 kHz, 16 bit) mengirim audio ke `i2s_rx`; klip yang dianalisis berdurasi 0,5 detik.
+2. **Fitur log-mel.** Pre-emphasis 0,97, frame 400 sampel (25 ms) dengan hop 160 (10 ms), jendela Hamming, FFT 512 titik, spektrum
+   daya, 40 band mel, log2 berbasis tabel, lalu dikuantisasi ke int8. Hasilnya segmen fitur 40x50. Detektor batuk (energi per hop
+   terhadap derau yang dilacak EMA) menentukan bagian audio yang diambil.
+3. **CNN int8.** Tiga lapis konvolusi 3x3 (16, 32, 32 kanal) dengan ReLU dan MaxPool, GAP, lalu FC 32 -> 16 -> 1: 14.496 bobot int8,
+   3.698.448 MAC per segmen. Akselerator output-stationary dengan P lane paralel; keluarannya logit int16 yang dikirim lewat UART.
+4. **Skor pasien.** Rata-rata logit dari beberapa batuk, dengan fusi bersama gejala klinis di perangkat lunak host (`sw/`, belum berisi kode).
+
+Setiap blok punya padanan numpy bit-exact di `golden/`; RTL diverifikasi terhadap golden lewat cocotb (`tb/`).
+
+## RTL
+- Ditulis dalam SystemVerilog vendor-neutral: tanpa IP atau primitif vendor, RAM/ROM lewat template inferensi, pengali dengan `*`.
+  Kode spesifik perangkat hanya ada di `target/`.
+- Tersusun menurut fungsi: `rtl/audio` (I2S, pre-emphasis, buffer frame), `rtl/detect` (detektor batuk), `rtl/dsp` (window, FFT,
+  mel, log, kuantisasi), `rtl/cnn` (PE array, kontrol, requant, GAP), `rtl/sys` (UART, CSR, top).
+- Semua ukuran (P, lebar data, kanal) berasal dari `golden/params.py`, sehingga konfigurasi dapat diperkecil bila FPGA lebih kecil.
+- Sintesis referensi: Vivado, Artix-7 XC7A35T-1 (bukan papan demo), dibandingkan dengan Yosys; angka ada di bagian Hasil.
+
+## Model
+- **CNN dilatih dari nol** pada audio batuk: AUROC sekitar 0,56 dan tidak dapat dibedakan dari acak.
+- **Embedding pralatih HeAR** (referensi sisi host, tidak berjalan di FPGA) memberi sinyal di atas nol permutasi setelah jenis kelamin
+  dikendalikan, tetapi tambahan di atas gejala klinis belum terbukti.
+- **Distilasi HeAR ke CNN golden**: murid memakai arsitektur yang sama dengan hardware, dikuantisasi int8, dan bit-exact di RTL;
+  statusnya eksploratori.
+- Pembanding terbaik tetap model gejala klinis (AUROC 0,77). Tidak ada klaim klinis atau generalisasi lintas klinik.
+
+## Data
+Dataset publik Kaggle "Google + CIDRZ Health AI Evaluation Zambia" (lisensi ODbL-1.0 menurut metadata Kaggle; syarat tambahan belum
+dibaca): rekaman batuk dari tiga klinik di Lusaka dengan perekam dan tiga ponsel, metadata klinis 1.828 peserta (205 positif TB).
+Audio berlabel yang dapat dipasangkan: 364 peserta (60 positif). Pembagian data per peserta, bukan per klip. Data dan bobot tidak
+ada di repo.
+
 ## Status
-Fase 0-6 selesai, versi 150 MHz (`optimized`) dan remodeling model selesai. Sisa: regresi terpadu (Fase T), papan (Fase 7, belum
+Fase 0-6 selesai, versi 150 MHz (`optimized`) dan remodeling model selesai. Regresi terpadu Fase T lulus (20 tes RTL dan 67 tes golden, simulasi Icarus). Sisa: papan (Fase 7, belum
 diumumkan), benchmark CPU (Fase 8). Rincian: `docs/vault/status-fase.md`.
 
-## Hasil (apa adanya)
+## Hasil
 | Aspek | Hasil | Sumber |
 |---|---|---|
 | Kesesuaian RTL dengan golden | Bit-exact per modul dan ujung ke ujung (dataset dan mikrofon), P = 8/16/32 | `docs/vault/verifikasi.md` |
@@ -59,6 +92,11 @@ Laporan lengkap: `docs/result/result.md` (dan `result.pdf`).
 ## Dokumen
 Baca berurutan: `docs/vault/status-fase.md`, `docs/vault/spesifikasi.md`, `docs/vault/keputusan.md`. Indeks: `docs/CONTEXT_INDEX.md`.
 Perintah build dan tes ada di `Makefile` (`make help`) dan docstring skrip; README tidak mengulangnya.
+
+## Referensi
+- Dataset: [Google + CIDRZ Health AI Evaluation Zambia di Kaggle](https://www.kaggle.com/datasets/googlehealthai/google-health-ai)
+- Model embedding akustik: [HeAR (`google/hear-pytorch`) di Hugging Face](https://huggingface.co/google/hear-pytorch)
+- Pembanding embedding: OPERA (OPERA-CE dan OPERA-CT); tautan belum dicantumkan karena belum diverifikasi.
 
 ## Lisensi dan data
 Lihat `LICENSE`. Data Zambia CIDRZ (ODbL-1.0) dan TBscreen (CC BY 4.0) tidak didistribusikan di repo ini. Bobot model
