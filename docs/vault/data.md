@@ -37,7 +37,9 @@ Total berkas WAV: 678; tidak terbaca: 0; tanpa barcode di nama: 14.
 - Positif per klinik sangat tidak seimbang (Chainda South: 1 positif di perekam).
 
 ## Audit cakupan (2026-10-12)
-- Rilis Kaggle memuat 1.481 berkas audio (daftar berkas Kaggle sama dengan yang diunduh); angka "664 peserta" pada deskripsi tidak ada
+- Daftar berkas Kaggle memuat 1.481 berkas `.wav` ditambah 4 berkas tanpa ekstensi; seluruhnya ada di disk (semua perangkat,
+  termasuk Phone B/C). Keempat berkas tanpa ekstensi diunduh sebagai `.zip` (masing-masing berisi satu berkas tanpa ekstensi), sehingga
+  audit yang menghitung `.wav` + `.zip` melaporkan 1.485 (= 1.481 + 4). Tabel 678 di atas hanya perekam + Phone A. Angka "664 peserta" pada deskripsi tidak ada
   di rilis. Barcode unik berlabel dengan audio: **364 (60 positif)**; pemulihan barcode salah ketik tidak menambah peserta.
 - Berkas tidak terpetakan: 30 bernama timestamp dan 98 dengan barcode tanpa pasangan metadata (36 barcode); tidak dipulihkan
   tanpa menebak. Audit: `model/data/audit_data.py`.

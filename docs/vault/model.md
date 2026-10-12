@@ -166,7 +166,7 @@ data yang lebih besar dan beragam serta bukti sinyal akustik yang belum ada pada
 
 ### 5d. Embedding pralatih dengan protokol evaluasi tetap (2026-10-12; K-23)
 
-Audit data: rilis Kaggle memuat 1.481 berkas audio (sama dengan yang diunduh); angka "664 peserta" pada deskripsi dataset tidak ada
+Audit data: rilis Kaggle memuat 1.481 berkas `.wav` dan 4 berkas tanpa ekstensi (diunduh sebagai `.zip`; audit menghitung 1.485); angka "664 peserta" pada deskripsi dataset tidak ada
 di rilis. Peserta berlabel dengan audio: **364 (60 positif)**; pemulihan barcode salah ketik tidak menambah peserta.
 
 Protokol: unit = peserta; CV 5-lipat, stratifikasi label x klinik x jenis kelamin; skor klinis dilatih hanya pada peserta tanpa audio;

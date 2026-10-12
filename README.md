@@ -31,6 +31,18 @@ Data, audio, fitur, bobot, dan proyek Vivado disimpan di luar repo (`$SUARATB_DA
 | Akselerator | Output-stationary, P lane paralel (8/16/32), akumulator 24 bit, requant per layer |
 | Antarmuka | I2S masuk, UART keluar (skor) dan mode dataset lewat UART, CSR 8 bit |
 
+## Arsitektur (`rtl/sys/suaratb_top.sv`)
+```
+ mikrofon I2S --> i2s_rx --+                                    +--> cough_det --(trig, start..end)--+
+                           +--> preemph --> frame_buf --e_out---+                                    |
+ UART 'D' (dataset) -------+                    |                                                    v
+                                                +--> dsp_chain --> feat_buf (50 kolom) --> cnn_top --> logit
+ UART 'W'/'R' <--> uart_bridge <--> csr                                                              |
+ UART 'L' (hasil) <------------------------------------------------------------------------------------+
+```
+Mode mikrofon memakai detektor batuk untuk memilih segmen; mode dataset memproses 50 frame pertama klip. `dsp_chain` membungkus
+window, fft512, power, mel, log_q, dan quant.
+
 ## Status
 Fase 0-6 selesai, versi 150 MHz (`optimized`) dan remodeling model selesai. Sisa: regresi terpadu (Fase T), papan (Fase 7, belum
 diumumkan), benchmark CPU (Fase 8). Rincian: `docs/vault/status-fase.md`.
@@ -55,5 +67,5 @@ Baca berurutan: `docs/vault/status-fase.md`, `docs/vault/spesifikasi.md`, `docs/
 Perintah build dan tes ada di `Makefile` (`make help`) dan docstring skrip; README tidak mengulangnya.
 
 ## Lisensi dan data
-Lihat `LICENSE`. Data Zambia CIDRZ (ODbL-1.0) dan TBscreen (CC BY 4.0) tidak didistribusikan di repo ini. Repo privat sampai
-setelah Demo Day.
+Lihat `LICENSE`. Data Zambia CIDRZ (ODbL-1.0) dan TBscreen (CC BY 4.0) tidak didistribusikan di repo ini. Bobot model
+tidak ada di repo.

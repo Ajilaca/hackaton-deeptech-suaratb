@@ -6,12 +6,14 @@ Baca berurutan: `vault/status-fase.md` -> `vault/spesifikasi.md` -> `vault/keput
 |---|---|
 | `vault/status-fase.md` | Fase aktif, hal terbuka |
 | `vault/spesifikasi.md` | Parameter final (ringkasan dari `golden/params.py`) |
-| `vault/keputusan.md` | Keputusan K-01..K-12 beserta alasan dan angka |
+| `vault/keputusan.md` | Keputusan K-01..K-23 beserta alasan dan angka |
 | `vault/kalibrasi-fase0.md` | Tabel SNR/galat/detektor (sintetis) |
 | `vault/data.md` | Dataset: sumber, lisensi (ODbL-1.0 dari metadata Kaggle), struktur, label |
 | `vault/kalibrasi-data-nyata.md` | Kalibrasi pada audio nyata (FFT_W, FEAT_OFFSET, detektor) |
 | `vault/model.md` | SATU dokumen model: arsitektur int8, data, pelatihan, kuantisasi, capaian, batasan (hasil negatif) |
 | `vault/verifikasi.md` | Infrastruktur verifikasi Fase 1 |
+| `vault/sintesis.md` | Hasil sintesis Vivado XC7A35T-1 dan Yosys: sumber daya, timing, sapuan P, versi 150 MHz |
+| `result/result.md` | Laporan hasil lengkap (dan `result/result.pdf`) |
 | `vault/anggaran-fase0.md` | Keluaran `golden/budget.py`: memori, pengali, siklus, muat/tidak per perangkat |
 
 ## Kode

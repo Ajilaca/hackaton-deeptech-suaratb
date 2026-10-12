@@ -105,7 +105,7 @@ Kapasitas perangkat dari ingatan, belum diverifikasi.
 | Pre-emphasis | tak tentu | 16+8 bit (K-08) |
 | Detektor 8 / 64 | tebakan | dipertahankan, berbasis sintetis (K-07) |
 
-## K-13 Fase 2: antarmuka front-end (ditulis, belum dijalankan)
+## K-13 Fase 2: antarmuka front-end (ditulis; tes unit lulus 2026-10-11, lihat K-19)
 - `i2s_rx`: FPGA sebagai master (BCLK = clk/96, WS = BCLK/64). 24 bit MSB-first, tertunda 1 BCLK; keluaran = 16 bit teratas
   (pemotongan/lantai). Konsekuensi: derau kuantisasi masukan = int16 seperti diasumsikan golden; bit rendah mikrofon (24 bit)
   tidak dipakai (lihat butir terbuka di status-fase.md).
@@ -156,7 +156,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   akumulator + LR (bukan akselerator; hanya disebut sebagai alternatif hemat di proposal).
 - Akurasi TIDAK diklaim (K-16); arsitektur dipilih demi demo akselerator yang terukur.
 
-## K-18 Fase 3: antarmuka dan jadwal DSP (ditulis, belum disimulasikan)
+## K-18 Fase 3: antarmuka dan jadwal DSP (ditulis; tes unit lulus 2026-10-11, lihat K-19)
 - Rantai: `frame_buf` -> `window` -> `fft512` -> `power` -> `mel` -> `log_q` -> `quant` -> `feat_buf` (`dsp_chain` membungkus
   window..quant). Semua parameter dari `suaratb_pkg`; ROM dari `rtl/mem/*.mem` (parameter `INIT_*`).
 - Laju: waktu per frame tersedia 983 rb siklus (hop 160 sampel @ 98,304 MHz), kebutuhan ~6-8 rb siklus, jadi seluruh rantai
@@ -168,6 +168,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   waktu tulis a'/b', pengalamatan in-place, indeks twiddle, geser stage) dan model alamat window/mel/feat_buf
   (`golden/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
   feat_buf}.py`) dan baru dijalankan di Fase T. RTL belum di-lint.
+  Pembaruan (K-19): tes unit modul dijalankan 2026-10-11 dan lulus; ini verifikasi per modul, bukan regresi terpadu.
 
 ## K-19 Aturan 3 diubah: tes unit per modul segera dijalankan (2026-10-11)
 - Alasan: kode Fase 2-3 (~20 modul) belum pernah dijalankan; menunda ke Fase T menumpuk bug ke 17-19 Okt, dua hari sebelum
@@ -227,7 +228,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   memprediksi jenis kelamin 0,867 (guru 0,953) dan klinik Kan 0,655 (guru 0,896); AUROC dalam Kan 0,735.
 - Keputusan model hardware: murid distilasi adalah KANDIDAT bobot eksploratori menggantikan `model_v2` (arsitektur sama, tanpa
   perubahan RTL). Kuantisasi int8 lulus (penurunan AUROC 0,008 <= 0,02) dan `cnn_top` bit-exact terhadap golden pada 8 klip nyata
-  (`model.md` §5e). Bobot murid dapat dipakai pada demo dengan label "eksploratori"; `test_top` penuh dan sintesis ulang belum dijalankan.
+  (`model.md` §5e). Bobot murid dapat dipakai pada demo dengan label "eksploratori"; `test_top` dengan bobot ini lulus (dataset dan mikrofon, Icarus); sintesis ulang belum dijalankan.
 - Pengamatan boleh dilaporkan: sinyal audio di atas nol permutasi dalam jenis kelamin dengan HeAR/OPERA-CT, tambahan kecil di atas
   gejala klinis (Δ +0,02..+0,04), tahan lintas-mikrofon, tetapi belum presisi, belum konsisten lintas klinik, tanpa data independen.
 - Batas: satu populasi, 364 peserta, tanpa data independen; tidak ada klaim klinis dari murid.
