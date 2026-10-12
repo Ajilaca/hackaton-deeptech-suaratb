@@ -15,7 +15,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
 from model import protocol as P
-from model.clinical import lr
+from model.clinical_models.clinical import lr
 from model.embed_pretrained import participant_matrix
 
 warnings.filterwarnings("ignore")

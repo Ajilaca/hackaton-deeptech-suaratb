@@ -1,6 +1,6 @@
 """Fusi skor batuk (CNN, out-of-fold) + gejala klinis (regresi logistik) dan laporan akhir.
 
-    python -m model.fusion --tag v2 --runs mil_v2.npz [--perm mil_perm.npz] [--out $SUARATB_DATA/runs/reports/pelatihan-serius.md]
+    python -m model.clinical_models.fusion --tag v2 --runs mil_v2.npz [--perm mil_perm.npz] [--out $SUARATB_DATA/runs/reports/pelatihan-serius.md]
 
 Fitur klinis yang DIPAKAI: age, sex, coughdur, cough_productive, haemoptysis, chestpain, shortbreath, fever,
 ngtsweats, weightloss, hiv_status, prev_tb, tobacco_use, bmi. TIDAK dipakai: xpert/culture/smear/lam, abn_*/tb_*
@@ -88,7 +88,7 @@ def main():
     sym = cv_auc(F, y, folds)
     o = ["# Pelatihan lebih serius: MIL tingkat peserta + fusi gejala klinis", "",
          f"`python -m model.scratch.mil_train` (CV {len(reps)}x5-lipat per peserta, ensemble seed, early stopping pada validasi dalam, "
-         f"kantong {4} batuk dengan rata-rata logit seperti perangkat; augmentasi gain/geser/SpecAugment) lalu `python -m model.fusion`.",
+         f"kantong {4} batuk dengan rata-rata logit seperti perangkat; augmentasi gain/geser/SpecAugment) lalu `python -m model.clinical_models.fusion`.",
          f"{len(y)} peserta, {int(y.sum())} positif TB (`ground_truth_tb`). CI 95% bootstrap atas peserta (2.000x).", ""]
     rows = []
     a_sym = roc_auc_score(y, sym); lo, hi = boot(y, sym)

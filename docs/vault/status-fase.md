@@ -53,7 +53,7 @@ Diperbarui: 2026-10-10.
 ## Pembaruan langkah 1-3 (2026-10-11 siang)
 - TBscreen terunduh (WAV + CSV, 1,37 GB; 28.366 berkas, CRC lolos) dan diproses: `model/data/tbscreen.py`, `model/tbs_eval.py`,
   hasil di `model.md` bagian 5. Tidak ada sinyal TB yang andal; cohort A/C hampir = label (perancu rekrutmen).
-- Fitur klinis diperluas + fusi bersarang: `model/clinical.py`, `model.md` bagian 4. Fusi terbaik 0,768 (target 0,80 belum).
+- Fitur klinis diperluas + fusi bersarang: `model/clinical_models/clinical.py`, `model.md` bagian 4. Fusi terbaik 0,768 (target 0,80 belum).
 - Uji embedding VGGish: `model/embed_test.py`, `model/embed_eval.py`; hasil di `model.md` bagian 5. Distilasi dibatalkan (K-16).
 - Target 0,70/0,80 diganti pelaporan terukur + pembanding WHO TPP (K-21). Klinis saja 0,772 (1.828 peserta); audio tidak
   menambah (+0,003). Lintas-perangkat Phone B/C 0,52-0,63. Detail di `model.md` bagian 5a-5c.

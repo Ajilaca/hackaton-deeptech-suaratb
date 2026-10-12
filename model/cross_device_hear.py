@@ -14,7 +14,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 from golden import paths
 from model import protocol as P
-from model.clinical import lr
+from model.clinical_models.clinical import lr
 
 warnings.filterwarnings("ignore")
 FILES = {"phonec": "emb_hear.npz", "phonea": "emb_hear_phonea.npz", "phoneb": "emb_hear_phoneb.npz"}

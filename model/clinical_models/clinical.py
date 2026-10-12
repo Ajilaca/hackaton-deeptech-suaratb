@@ -1,6 +1,6 @@
 """Langkah 2: perbaiki fitur klinis dan fusi dengan audio, evaluasi bersarang tanpa kebocoran.
 
-    python -m model.clinical --tag v2 [--reps 5] [--out $SUARATB_DATA/runs/reports/klinis-fusi.md]
+    python -m model.clinical_models.clinical --tag v2 [--reps 5] [--out $SUARATB_DATA/runs/reports/klinis-fusi.md]
 
 Fitur klinis memakai HANYA gejala/anamnesis/antropometri. TIDAK dipakai: xpert/culture/smear/lam/type_tb, abn_*/tb_*
 (prediksi AI X-ray), ground_truth_tb (kebocoran label), facility_code (kode klinik: jalan pintas rekrutmen, dilaporkan
@@ -21,7 +21,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
-from model import fusion
+from model.clinical_models import fusion
 from model.data import dataset
 from model.scratch.remodel import load, participant_features
 

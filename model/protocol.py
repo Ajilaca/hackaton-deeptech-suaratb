@@ -24,7 +24,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
 from model.data import dataset
-from model.clinical import clin_extended, lr, audio_score
+from model.clinical_models.clinical import clin_extended, lr, audio_score
 
 warnings.filterwarnings("ignore")
 REPS, K = 10, 5

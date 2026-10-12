@@ -140,7 +140,7 @@ Metadata Zambia memuat 1.828 peserta berlabel (205 positif); hanya 360 (58 posit
   jenis kelamin/usia (§4).
 - Peserta berlaudio tidak mewakili semuanya: prevalensi 16,1% vs 10,0% (klinik Kan 21,9% vs 13,4%).
 - Target fusi ≥ 0,80 tidak tercapai (terbaik 0,78). Skor klinis diperoleh dari model yang dilatih pada peserta tanpa audio;
-  skor audio dihitung di dalam lipatan (tanpa kebocoran). Kode: `model/clinical_full.py`.
+  skor audio dihitung di dalam lipatan (tanpa kebocoran). Kode: `model/clinical_models/clinical_full.py`.
 
 ### 5c. Jarak ke standar WHO TPP (triase berbasis komunitas)
 

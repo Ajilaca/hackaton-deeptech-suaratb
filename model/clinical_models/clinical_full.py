@@ -1,6 +1,6 @@
 """Klinis pada SEMUA peserta berlabel (n=1.828) dan manfaat tambahan audio pada 360 peserta berlaudio.
 
-    python -m model.clinical_full --tag v2 [--out $SUARATB_DATA/runs/reports/klinis-penuh.md]
+    python -m model.clinical_models.clinical_full --tag v2 [--out $SUARATB_DATA/runs/reports/klinis-penuh.md]
 
 Pertanyaan: (1) seberapa baik gejala klinis memprediksi TB bila memakai semua peserta (tanpa audio)? (2) apakah 360 peserta
 berlaudio mewakili 1.828? (3) apakah audio menambah di atas skor klinis? Tanpa kebocoran: skor klinis untuk 360 peserta
@@ -16,9 +16,9 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
-from model import fusion
+from model.clinical_models import fusion
 from model.data import dataset
-from model.clinical import clin_extended, lr, audio_score, boot
+from model.clinical_models.clinical import clin_extended, lr, audio_score, boot
 from model.scratch.remodel import load, participant_features
 
 warnings.filterwarnings("ignore")
