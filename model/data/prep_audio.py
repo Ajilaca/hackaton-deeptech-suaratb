@@ -1,6 +1,6 @@
 """Segmentasi batuk memakai DETEKTOR GOLDEN (sama dengan yang akan ada di hardware).
 
-    python -m model.prep_audio --devices recorder phonea [--workers 3]
+    python -m model.data.prep_audio --devices recorder phonea [--workers 3]
 
 Keluaran di $SUARATB_DATA/processed/clips/<device>/<barcode>.npz:
   clips (n, 8240) int16 mulai onset-PRE_ROLL frame; onsets (n,) frame; hop_rms (nf,) float32 (RMS per hop)
@@ -16,8 +16,8 @@ import pandas as pd
 from golden import params, paths
 from golden.blocks.preemph import preemph
 from golden.blocks.cough_det import hop_energy, cough_det
-from model.audio_io import load_16k
-from model import dataset
+from model.data.audio_io import load_16k
+from model.data import dataset
 
 
 def process(args):

@@ -1,6 +1,6 @@
 """Fitur kualitas/kemiripan-batuk per klip (heuristik DITETAPKAN SEBELUM melihat label) + topeng.
 
-    python -m model.clipq --tag v2
+    python -m model.data.clipq --tag v2
 
 Per klip (8240 sampel, onset di frame PRE_ROLL=5): snr_db (puncak RMS vs median RMS frame pra-onset 0..3),
 attack_db (kenaikan energi frame 4 -> 7), dur_fr (frame dalam 12 dB dari puncak), harm (autokorelasi ternormalisasi

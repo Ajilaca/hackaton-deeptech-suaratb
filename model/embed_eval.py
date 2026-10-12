@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
-from model import dataset
+from model.data import dataset
 from model.tbs_eval import mk, ci, row, participant_table
 
 

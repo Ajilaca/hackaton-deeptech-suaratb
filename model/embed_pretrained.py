@@ -45,7 +45,7 @@ def spectrogram(x: np.ndarray, sr: int = 16000, min_sec: float = 8.0) -> np.ndar
 
 
 def extract(name: str):
-    from model.audio_io import load_16k
+    from model.data.audio_io import load_16k
     fx = pd.read_csv(paths.processed_dir() / "barcode_fix.csv")
     fx = fx[fx.tier.isin(["asli", "pola", "tengah"]) & fx.path.str.lower().str.endswith(".wav")].reset_index(drop=True)
     torch.set_num_threads(4)
@@ -77,7 +77,7 @@ def extract_hear(max_clips: int = 6, pref=("phonec", "phoneb", "phonea", "record
     from golden import params
     from golden.blocks.cough_det import hop_energy, cough_det
     from golden.blocks.preemph import preemph
-    from model.audio_io import load_16k
+    from model.data.audio_io import load_16k
     spec = importlib.util.spec_from_file_location("au", str(EXT / "hear/python/data_processing/audio_utils.py"))
     au = importlib.util.module_from_spec(spec); spec.loader.exec_module(au)
     os.environ.setdefault("HF_HOME", str(paths.data_root() / "hf"))

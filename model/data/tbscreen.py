@@ -1,7 +1,7 @@
 """TBscreen (Nairobi, UW, CC BY 4.0): klip 1 s -> segmen 8240 sampel -> fitur golden int8, selaras format Zambia.
 
-    python -m model.tbscreen build [--cap 60] [--workers 4]
-    python -m model.tbscreen zambia_active [--tag v2]
+    python -m model.data.tbscreen build [--cap 60] [--workers 4]
+    python -m model.data.tbscreen zambia_active [--tag v2]
 
 Klip TBscreen sudah dipotong satu batuk per berkas (1 s, nol di ekor/tengah), jadi detektor golden tidak dipakai:
 onset = frame pertama dengan energi hop > puncak/16 (-12 dB), segmen mulai di (onset - PRE_ROLL) frame, nol-isi di ekor.
@@ -21,7 +21,7 @@ from golden.blocks import frontend as F
 from golden.blocks.cough_det import hop_energy
 from golden.blocks.preemph import preemph
 from golden.blocks.quant import quant_feat
-from model.audio_io import load_16k
+from model.data.audio_io import load_16k
 
 ROOT = paths.data_root() / "raw_tbscreen" / "TBscreen_Dataset"
 N = params.CLIP_SAMPLES_PADDED

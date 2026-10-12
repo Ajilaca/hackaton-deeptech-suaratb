@@ -23,7 +23,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
-from model import dataset
+from model.data import dataset
 from model.clinical import clin_extended, lr, audio_score
 
 warnings.filterwarnings("ignore")

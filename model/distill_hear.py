@@ -24,7 +24,7 @@ from golden import params, paths
 from golden.blocks import frontend as F
 from golden.blocks.cough_det import hop_energy, cough_det
 from golden.blocks.preemph import preemph
-from model.audio_io import load_16k
+from model.data.audio_io import load_16k
 
 warnings.filterwarnings("ignore")
 HOP = params.HOP

@@ -51,7 +51,7 @@ Diperbarui: 2026-10-10.
 - Keputusan arsitektur Fase 4 tertunda: CNN vs akumulator statistik + LR (lihat `model.md` dan K-17).
 
 ## Pembaruan langkah 1-3 (2026-10-11 siang)
-- TBscreen terunduh (WAV + CSV, 1,37 GB; 28.366 berkas, CRC lolos) dan diproses: `model/tbscreen.py`, `model/tbs_eval.py`,
+- TBscreen terunduh (WAV + CSV, 1,37 GB; 28.366 berkas, CRC lolos) dan diproses: `model/data/tbscreen.py`, `model/tbs_eval.py`,
   hasil di `model.md` bagian 5. Tidak ada sinyal TB yang andal; cohort A/C hampir = label (perancu rekrutmen).
 - Fitur klinis diperluas + fusi bersarang: `model/clinical.py`, `model.md` bagian 4. Fusi terbaik 0,768 (target 0,80 belum).
 - Uji embedding VGGish: `model/embed_test.py`, `model/embed_eval.py`; hasil di `model.md` bagian 5. Distilasi dibatalkan (K-16).

@@ -17,7 +17,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
-from model import dataset
+from model.data import dataset
 
 CLIN = ["age", "sex", "coughdur", "cough_productive", "haemoptysis", "chestpain", "shortbreath", "fever",
         "ngtsweats", "weightloss", "hiv_status", "prev_tb", "tobacco_use", "bmi"]

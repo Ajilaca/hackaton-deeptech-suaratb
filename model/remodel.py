@@ -19,7 +19,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
-from model import fusion, dataset
+from model import fusion
+from model.data import dataset
 
 warnings.filterwarnings("ignore")
 

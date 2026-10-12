@@ -1,6 +1,6 @@
 """Bangun tabel klip berlabel, fitur golden (beberapa lebar FFT) + fitur float-ref, dan split per peserta.
 
-    python -m model.build_data [--workers 3] [--offset 8265] [--shift 5]
+    python -m model.data.build_data [--workers 3] [--offset 8265] [--shift 5]
 
 Keluaran ($SUARATB_DATA/features): feats_v1.npz (x_w24, x_w22, x_w20, x_w18, x_ref: int8 (N,50,40)),
 meta_v1.csv (barcode,y,facility,device,path,onset_idx); ($SUARATB_DATA/processed): splits_v1.csv (barcode,fold).
@@ -17,7 +17,7 @@ from golden import params, paths
 from golden.blocks import frontend as F
 from golden.blocks.preemph import preemph
 from golden.blocks.quant import quant_feat
-from model import dataset
+from model.data import dataset
 
 WIDTHS = (24, 22, 20, 18)
 

@@ -1,13 +1,13 @@
 """Tulis ringkasan dataset ke docs/vault/data.md (dapat dijalankan ulang setelah unduhan bertambah).
 
-    python -m model.describe_data
+    python -m model.data.describe_data
 """
 from __future__ import annotations
 import json
 import pathlib
 import pandas as pd
 from golden import paths
-from model import dataset
+from model.data import dataset
 
 
 def main(out="docs/vault/data.md"):
@@ -26,7 +26,7 @@ def main(out="docs/vault/data.md"):
     err = wav[wav["subtype"].astype(str).str.startswith("ERR")]
     ci = pd.read_csv(paths.processed_dir() / "clip_index.csv") if (paths.processed_dir() / "clip_index.csv").exists() else None
     o = ["# Data (Google + CIDRZ Health AI Evaluation Zambia)", "",
-         "Dihasilkan `python -m model.describe_data`. Lokasi: `$SUARATB_DATA/raw` (= `/data/suaratb/raw`); tidak di-commit.", "",
+         "Dihasilkan `python -m model.data.describe_data`. Lokasi: `$SUARATB_DATA/raw` (= `/data/suaratb/raw`); tidak di-commit.", "",
          "## Sumber dan lisensi",
          f"- Kaggle `{meta['ownerUser']}/{meta['datasetSlug']}`, judul \"{meta['title']}\".",
          f"- Lisensi menurut metadata Kaggle: **{', '.join(l['name'] for l in meta['licenses'])}** (ODbL-1.0). "
@@ -46,7 +46,7 @@ def main(out="docs/vault/data.md"):
           f"- Audio berlabel: {int(j.y.notna().sum())} dari {len(j)} berkas WAV; peserta unik berlabel {j[j.y.notna()].barcode.nunique()}.", ""]
     if ci is not None:
         ok = ci[ci.status.isin(['ok', 'cached'])]
-        o += ["## Segmentasi (detektor golden, `model.prep_audio`)",
+        o += ["## Segmentasi (detektor golden, `model.data.prep_audio`)",
               f"- Rekaman diproses: {len(ci)}; klip batuk: {int(ok.n_clips.sum())}; median klip/rekaman {ok.n_clips.median():.0f}.",
               f"- Hash duplikat (rekaman identik): {int(ok.duplicated('hash').sum())}.", ""]
     o += ["## Catatan kualitas",

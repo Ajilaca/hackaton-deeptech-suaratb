@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import roc_auc_score
 from golden import paths
-from model import dataset
+from model.data import dataset
 from model.mil_train import augment, BAG
 
 SCALE = 64.0

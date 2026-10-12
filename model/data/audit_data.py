@@ -1,6 +1,6 @@
 """E1: audit cakupan data audio Zambia (berkas -> barcode -> metadata berlabel) dan pemulihan barcode salah ketik.
 
-    python -m model.audit_data [--out $SUARATB_DATA/runs/reports/audit-data.md]
+    python -m model.data.audit_data [--out $SUARATB_DATA/runs/reports/audit-data.md]
 
 Aturan pemulihan (urut, tiap tahap diberi label tingkat keyakinan):
   1. normalisasi pola: pemisah '_', ' ', tanpa tanda hubung ('027399-0735', '02-39970740')    -> tier "pola"
@@ -16,7 +16,7 @@ import pathlib
 import re
 import pandas as pd
 from golden import paths
-from model import dataset
+from model.data import dataset
 
 FAC_OF_FOLDER = {"kanyama": "Kan", "chawama": "Cha", "chainda": "Chai"}
 LOOSE = re.compile(r"(?<!\d)(\d{2})\D?(\d{3})\D?(\d{3,4})(?!\d)")

@@ -1,6 +1,6 @@
 # Data (Google + CIDRZ Health AI Evaluation Zambia)
 
-Dihasilkan `python -m model.describe_data`. Lokasi: `$SUARATB_DATA/raw` (= `/data/suaratb/raw`); tidak di-commit.
+Dihasilkan `python -m model.data.describe_data`. Lokasi: `$SUARATB_DATA/raw` (= `/data/suaratb/raw`); tidak di-commit.
 
 ## Sumber dan lisensi
 - Kaggle `googlehealthai/google-health-ai`, judul "Google + CIDRZ Health AI Evaluation Zambia".
@@ -25,7 +25,7 @@ Total berkas WAV: 678; tidak terbaca: 0; tanpa barcode di nama: 14.
 - `ground_truth_tb`: 205 pos, 1.623 neg di seluruh 1.828 peserta.
 - Audio berlabel: 620 dari 678 berkas WAV; peserta unik berlabel 360.
 
-## Segmentasi (detektor golden, `model.prep_audio`)
+## Segmentasi (detektor golden, `model.data.prep_audio`)
 - Rekaman diproses: 679; klip batuk: 8056; median klip/rekaman 11.
 - Hash duplikat (rekaman identik): 28.
 
