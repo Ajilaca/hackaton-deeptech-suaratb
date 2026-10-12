@@ -3,7 +3,7 @@ SETUP.md
 scripts/
 
 # --- Data & hasil pelatihan (lisensi dataset) ---
-data/
+/data/
 data/raw
 data/processed
 data/features
