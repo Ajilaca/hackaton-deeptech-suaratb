@@ -1,12 +1,12 @@
 # SuaraTB
 
-Akselerator skrining TBC dari suara batuk untuk Hackathon Deeptech 2026 (Indonesia Chip Hackathon Challenge, ITB/ICDeC), tema
-Medical Device. Alur: mikrofon I2S -> fitur log-mel -> CNN int8 -> skor risiko. Audio tidak keluar dari perangkat. RTL
-vendor-neutral; model numpy bit-exact (`golden/`) adalah spesifikasi hardware.
+SuaraTB adalah prototipe akselerator FPGA untuk skrining awal tuberkulosis (TBC) melalui suara batuk. Proyek ini dikembangkan untuk Hackathon Deeptech 2026 - Indonesia Chip Hackathon Challenge, ITB/ICDeC, dengan tema Medical Device.
 
-> **Batas klaim.** Alat ini adalah pendukung triase/prioritas rujukan ke tes TCM/dahak, **bukan** diagnosis. Hasil terukur
-> belum memenuhi standar WHO TPP triase (sensitivitas >= 90%, spesifisitas >= 70%). Akurasi audio belum terbukti secara presisi
-> (lihat bagian Hasil). Tidak ada klaim "jalan di papan": semua angka hardware berasal dari simulasi dan laporan sintesis.
+Sistem menerima audio dari mikrofon melalui antarmuka I2S, mengolahnya menjadi fitur log-mel, lalu menjalankan inferensi CNN int8 untuk menghasilkan skor risiko. Pemrosesan dirancang berlangsung langsung di perangkat sehingga audio tidak perlu dikirim ke server.
+
+Model referensi di `golden/` digunakan sebagai acuan numerik untuk implementasi hardware. RTL ditulis agar tidak bergantung pada primitive vendor tertentu.
+
+> **Batas penggunaan.** SuaraTB ditujukan untuk membantu triase dan menentukan prioritas pemeriksaan lanjutan, bukan untuk mendiagnosis TBC. Hasil evaluasi saat ini belum cukup untuk menyatakan bahwa model memenuhi target WHO untuk triase TBC, yaitu sensitivitas minimal 90% dan spesifisitas minimal 70%. Bukti performa model dan implementasi hardware dijelaskan pada bagian hasil pengujian. Hasil hardware yang tersedia berasal dari simulasi dan laporan sintesis; pengujian pada papan FPGA belum diklaim.
 
 ## Struktur repo
 | Jalur | Isi |
@@ -31,17 +31,11 @@ Data, audio, fitur, bobot, dan proyek Vivado disimpan di luar repo (`$SUARATB_DA
 | Akselerator | Output-stationary, P lane paralel (8/16/32), akumulator 24 bit, requant per layer |
 | Antarmuka | I2S masuk, UART keluar (skor) dan mode dataset lewat UART, CSR 8 bit |
 
-## Arsitektur (`rtl/sys/suaratb_top.sv`)
-```
- mikrofon I2S --> i2s_rx --+                                    +--> cough_det --(trig, start..end)--+
-                           +--> preemph --> frame_buf --e_out---+                                    |
- UART 'D' (dataset) -------+                    |                                                    v
-                                                +--> dsp_chain --> feat_buf (50 kolom) --> cnn_top --> logit
- UART 'W'/'R' <--> uart_bridge <--> csr                                                              |
- UART 'L' (hasil) <------------------------------------------------------------------------------------+
-```
-Mode mikrofon memakai detektor batuk untuk memilih segmen; mode dataset memproses 50 frame pertama klip. `dsp_chain` membungkus
-window, fft512, power, mel, log_q, dan quant.
+## Arsitektur
+![Arsitektur SuaraTB: mikrofon I2S ke skor risiko](docs/img/arsitektur.png)
+
+Mode mikrofon memakai detektor batuk untuk memilih segmen; mode dataset memproses 50 frame pertama klip yang dikirim lewat UART.
+Sumber: `rtl/sys/suaratb_top.sv`.
 
 ## Status
 Fase 0-6 selesai, versi 150 MHz (`optimized`) dan remodeling model selesai. Sisa: regresi terpadu (Fase T), papan (Fase 7, belum
