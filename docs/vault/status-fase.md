@@ -13,7 +13,7 @@
 | 5 | Selesai | `suaratb_top`: mode dataset (UART) dan mikrofon (I2S), bit-exact ujung ke ujung |
 | 6 | Selesai | Vivado XC7A35T-1: 100 MHz terpenuhi (Fase 6) dan 150 MHz (`optimized`, K-22); Yosys sebagai pembanding; `sintesis.md` |
 | Remodel | Selesai (eksploratori) | Embedding HeAR/OPERA, protokol evaluasi tetap, uji permutasi, distilasi ke CNN golden; K-23, `model.md` §5d-5e |
-| T | Selesai | `make test FASE_T=1 SIM=icarus` (2026-10-12): 20 tes `tb/` lulus, 0 gagal, 45 menit 45 detik; 67 tes `golden/` lulus. Model: bobot acak terkalibrasi (`test_top` bobot distilasi diuji terpisah). Hanya simulasi Icarus, bukan papan; Verilator tidak dipakai (cocotb 2.1 tidak cocok dengan Verilator 5.020) |
+| T | Selesai | `make test FASE_T=1 SIM=icarus` (2026-10-12): 20 tes `tb/` lulus, 0 gagal, 45 menit 45 detik; diulang setelah penataan direktori `golden/` dan `tb/`: 20 lulus, 41 menit 5 detik, exit code 0; 67 tes `golden/` lulus. Model: bobot acak terkalibrasi (`test_top` bobot distilasi diuji terpisah). Hanya simulasi Icarus, bukan papan; Verilator tidak dipakai (cocotb 2.1 tidak cocok dengan Verilator 5.020) |
 | 7 | Belum | Papan panitia belum diumumkan |
 | 8 | Belum | Benchmark vs CPU dan angka akhir |
 

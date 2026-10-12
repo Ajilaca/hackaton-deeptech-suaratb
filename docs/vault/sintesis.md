@@ -69,15 +69,17 @@ di Icarus, 2026-10-11). Vivado 2026.1, XC7A35T-1, OOC, setelah route:
 hanya 0,023 ns). Dibanding 100 MHz: FF +21% sampai +35% (register pipeline), LUT praktis sama (P=8 -0,3%, P=16 +1,6%, P=32 -1,4%),
 DSP dan BRAM tidak berubah.
 
-Siklus inferensi versi ini belum diukur ulang (angka di bawah dari versi 100 MHz; pipeline menambah sedikit siklus).
+Siklus inferensi versi ini diukur ulang (2026-10-13, simulasi Icarus, `cnn_top` dari pulsa `start` sampai `done`): P = 8: 451.880; P = 16: 226.520;
+P = 32: 122.872, yaitu +29 sampai +30 siklus dari versi 100 MHz (tabel di bawah). Selisih ini sebagian dapat berasal dari titik hitung
+yang berbeda; pengukuran lama tidak mencatat titik awal/akhirnya.
 
 ## Latensi CNN (siklus dari simulasi x periode; angka turunan, bukan laporan alat)
 
-| P | Siklus inferensi (simulasi) | @ 98,304 MHz (rencana I2S) | @ 100 MHz (timing terpenuhi) |
-|---|---|---|---|
-| 8 | 451.851 | 4,60 ms | 4,52 ms |
-| 16 | 226.490 | 2,30 ms | 2,26 ms |
-| 32 | 122.843 | 1,25 ms | 1,23 ms |
+| P | Siklus, versi 100 MHz | @ 98,304 MHz (rencana I2S) | @ 100 MHz | Siklus, versi 150 MHz | @ 150 MHz | @ 147,456 MHz (clock inti, K-22) |
+|---|---|---|---|---|---|---|
+| 8 | 451.851 | 4,60 ms | 4,52 ms | 451.880 | 3,01 ms | 3,06 ms |
+| 16 | 226.490 | 2,30 ms | 2,26 ms | 226.520 | 1,51 ms | 1,54 ms |
+| 32 | 122.843 | 1,25 ms | 1,23 ms | 122.872 | 0,82 ms | 0,83 ms |
 
 Latensi yang dirasakan pengguna tetap didominasi pengambilan 0,5 s audio.
 

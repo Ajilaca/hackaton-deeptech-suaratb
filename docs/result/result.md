@@ -81,8 +81,8 @@ Tanpa constraint I/O dan tanpa MMCM (tidak ada pin); timing = jalur register ke 
 - Jalur kritis berpindah dari kupu-kupu FFT, ke detektor, lalu ke baca BRAM + pengali PE; semuanya diperbaiki tanpa mengubah
   hasil bit-exact (register keluaran BRAM, pengali dipecah, lebar aritmetika disempitkan).
 - DSP = 17 untuk semua P: pengali 8x8 PE dipetakan ke LUT; kenaikan P menambah LUT, bukan DSP. BRAM tidak bergantung P.
-- Siklus inferensi CNN (simulasi, versi 100 MHz): P = 8: 451.851; P = 16: 226.490; P = 32: 122.843 (belum diukur ulang pada versi 150 MHz).
-- Latensi CNN pada 100 MHz (siklus x periode, angka turunan): P = 8: 4,52 ms; P = 16: 2,26 ms; P = 32: 1,23 ms.
+- Siklus inferensi CNN (simulasi Icarus): versi 100 MHz P = 8: 451.851; P = 16: 226.490; P = 32: 122.843. Versi 150 MHz (diukur ulang 2026-10-13): P = 8: 451.880; P = 16: 226.520; P = 32: 122.872.
+- Latensi CNN (siklus x periode, angka turunan): 100 MHz: P = 8: 4,52 ms; P = 16: 2,26 ms; P = 32: 1,23 ms. 150 MHz: P = 8: 3,01 ms; P = 16: 1,51 ms; P = 32: 0,82 ms.
 - Pembanding Yosys 0,33 (tanpa timing): LUT 11.083-12.560, DSP 32-56; bukan prediksi Vivado.
 - Latensi yang dirasakan pengguna didominasi pengambilan 0,5 s audio; komputasi CNN hanya ±1-2 ms.
 - Batas: satu jalankan per titik (tanpa seed sweep), margin P = 32 tipis (+0,023 ns), belum diuji di papan.

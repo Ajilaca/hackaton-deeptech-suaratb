@@ -62,15 +62,14 @@ Vivado 2026.1, Artix-7 XC7A35T-1, out-of-context (tanpa I/O dan MMCM), setelah r
 
 Pada 100 MHz, ketiga nilai P juga memenuhi timing. Clock inti yang dipakai di `target/` adalah 147,456 MHz (K-22).
 
-Latensi inferensi CNN dihitung dari jumlah siklus hasil simulasi dikali periode clock; ini angka turunan, bukan laporan alat.
-Siklus diukur pada versi 100 MHz. Pada versi 150 MHz pipeline menambah sedikit siklus dan belum diukur ulang, sehingga latensi
-pada 150 MHz belum dicantumkan. Sumber: `docs/vault/sintesis.md`.
+Latensi inferensi CNN dihitung dari jumlah siklus hasil simulasi (Icarus, dari `start` sampai `done`) dikali periode clock; ini
+angka turunan, bukan laporan alat. Sumber: `docs/vault/sintesis.md`.
 
-| P | Siklus inferensi (simulasi) | Latensi @ 100 MHz |
-|---|---|---|
-| 8 | 451.851 | 4,52 ms |
-| 16 | 226.490 | 2,26 ms |
-| 32 | 122.843 | 1,23 ms |
+| P | Siklus, versi 100 MHz | Latensi @ 100 MHz | Siklus, versi 150 MHz | Latensi @ 150 MHz |
+|---|---|---|---|---|
+| 8 | 451.851 | 4,52 ms | 451.880 | 3,01 ms |
+| 16 | 226.490 | 2,26 ms | 226.520 | 1,51 ms |
+| 32 | 122.843 | 1,23 ms | 122.872 | 0,82 ms |
 
 Latensi ini hanya untuk CNN. Waktu yang dirasakan pengguna didominasi pengambilan 0,5 s audio.
 
