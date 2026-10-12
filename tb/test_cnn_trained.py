@@ -46,13 +46,14 @@ async def test_trained(dut):
 
 
 def test_runner():
-    model_dir = paths.runs_dir() / "model_v2"
+    name = os.environ.get("CNN_TRAINED_MODEL", "model_v2")
+    model_dir = paths.runs_dir() / name
     if not (model_dir / "qmodel.npz").exists():
-        pytest.skip("model_v2 tidak ada")
+        pytest.skip(f"{name} tidak ada")
     from golden.blocks import cnn as C
     from golden.gen_cnn_rom import write_roms
     from tb.common.runner import run
     tmp = ROOT / "target" / "build" / "trained"
     write_roms(C.load_qmodel(model_dir / "qmodel.npz"), tmp / "tb" / "vectors" / "cnn")
     os.environ["CNN_VEC_DIR"] = str(model_dir / "vectors")
-    run("cnn_top", "test_cnn_trained", cwd=str(tmp), tag="_trained")
+    run("cnn_top", "test_cnn_trained", cwd=str(tmp), tag="_trained_" + name)

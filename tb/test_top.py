@@ -17,10 +17,18 @@ from golden.blocks.preemph import preemph
 from tb.common import vec
 from tb.common.cocotb_utils import start_clock, reset
 from tb.common.golden_model import random_calibrated_model
+from golden import paths
 from tb.common.uart_model import uart_send, UartMonitor
 
+MODEL_NAME = os.environ.get("TOP_MODEL", "")     # "" = model acak terkalibrasi; selain itu runs/<nama>/qmodel.npz
 CPB = 24            # clk per bit UART (2 byte/sampel = 480 siklus >= 404 yang dibutuhkan frame_buf)
 CPBCLK = 8          # clk per BCLK I2S (512 siklus/sampel >= 404)
+
+
+def get_model():
+    if MODEL_NAME:
+        return C.load_qmodel(paths.runs_dir() / MODEL_NAME / "qmodel.npz")
+    return random_calibrated_model()
 
 
 async def i2s_mic(dut, words):
@@ -63,6 +71,8 @@ async def test_dataset_and_mic(dut):
     for case in ("cough", "noise3"):
         x = np.array(vec.load("frontend", case, "in", 16), dtype=np.int16)
         exp = vec.load("cnn", case, "out_logit", 16)[0]
+        if MODEL_NAME:
+            exp = int(C.cnn_forward(F.to_cnn_input(F.features_q(x.astype(np.int64))), get_model())[0])
         await uart_send(dut, b"D" + x.astype("<i2").tobytes(), CPB)
         await wait_bytes(dut, mon, 4 * (n_res + 1), 3_000_000, f"{case}: hasil")
         fr = mon.bytes[4 * n_res:4 * n_res + 4]
@@ -81,7 +91,7 @@ async def test_dataset_and_mic(dut):
     ev = cough_det(hop_energy(preemph(x_ext)))
     assert ev, "golden tidak mendeteksi batuk"
     seg = F.segment(F.features_q(x_ext), ev[0].start)
-    model = random_calibrated_model()
+    model = get_model()
     exp = int(C.cnn_forward(F.to_cnn_input(seg), model)[0])
     words = [(int(s) & 0xFFFF) << 8 for s in x_ext]
     await uart_send(dut, b"W\x00\x01", CPB)                 # mode mikrofon (i2s_rx aktif)
@@ -107,7 +117,7 @@ async def test_mic(dut):
     x = np.array(vec.load("frontend", "cough", "in", 16), dtype=np.int64)
     ev = cough_det(hop_energy(preemph(x)))
     assert ev, "golden tidak mendeteksi batuk"
-    exp = int(C.cnn_forward(F.to_cnn_input(F.segment(F.features_q(x), ev[0].start)), random_calibrated_model())[0])
+    exp = int(C.cnn_forward(F.to_cnn_input(F.segment(F.features_q(x), ev[0].start)), get_model())[0])
     words = [(int(v) & 0xFFFF) << 8 for v in x]
     await uart_send(dut, b"W\x00\x01", CPB)
     mic = cocotb.start_soon(i2s_mic(dut, words))
@@ -123,6 +133,16 @@ async def test_mic(dut):
 
 def test_runner():
     from tb.common.runner import run
+    if MODEL_NAME:
+        from golden.gen_cnn_rom import write_roms
+        tmp = pathlib.Path(__file__).resolve().parents[1] / "target" / "build" / f"top_{MODEL_NAME}"
+        write_roms(get_model(), tmp / "tb" / "vectors" / "cnn")
+        (tmp / "rtl").mkdir(parents=True, exist_ok=True)
+        link = tmp / "rtl" / "mem"
+        if not link.exists():
+            link.symlink_to(pathlib.Path(__file__).resolve().parents[1] / "rtl" / "mem")    # ROM DSP (jalur relatif terhadap cwd)
+        run("suaratb_top", "test_top", parameters={"CLK_PER_BIT": CPB, "CLK_PER_BCLK": CPBCLK}, cwd=str(tmp), tag=f"_{MODEL_NAME}")
+        return
     run("suaratb_top", "test_top", parameters={"CLK_PER_BIT": CPB, "CLK_PER_BCLK": CPBCLK})
 
 
