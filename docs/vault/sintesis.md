@@ -85,13 +85,26 @@ Latensi yang dirasakan pengguna tetap didominasi pengambilan 0,5 s audio.
 
 ## Hasil Yosys (perbandingan lintas-vendor; tanpa timing)
 
+Versi 100 MHz (RTL Fase 6, 2026-10-11):
+
 | P | LUT | FF | DSP48E1 | BRAM36 / BRAM18 |
 |---|---|---|---|---|
 | 8 | 11.083 | 6.358 | 32 | 9 / 2 |
 | 16 | 11.507 | 6.684 | 40 | 9 / 2 |
 | 32 | 12.560 | 7.403 | 56 | 9 / 2 |
 
-Yosys memetakan lebih banyak LUT dan DSP daripada Vivado (LUT 1,5-2,4x; DSP 1,9-3,3x) dan lebih sedikit BRAM; angka Yosys bukan
+Versi 150 MHz (RTL `optimized`, 2026-10-13, `make synth-yosys P=<P>`, Yosys 0.33 + sv2v, bobot `model_v2`):
+
+| P | LUT | FF | DSP48E1 | BRAM36 / BRAM18 |
+|---|---|---|---|---|
+| 8 | 10.228 | 8.052 | 38 | 9 / 2 |
+| 16 | 10.990 | 8.907 | 54 | 9 / 2 |
+| 32 | 12.974 | 10.747 | 86 | 9 / 2 |
+
+Pada versi 150 MHz, FF dan DSP naik (register pipeline dan pengali yang dipecah) sedangkan LUT relatif sama, searah dengan hasil Vivado.
+LUT dan FF di sini adalah jumlah sel LUT1-6 dan FDRE/FDSE dari `stat.txt`.
+
+Yosys memetakan lebih banyak LUT dan DSP daripada Vivado (versi 100 MHz: LUT 1,5-2,4x, DSP 1,9-3,3x; versi 150 MHz: LUT 1,6-2,1x, DSP 2,2-5,1x) dan lebih sedikit BRAM; angka Yosys bukan
 prediksi Vivado dan tidak memuat timing. Selisih ini wajar untuk dua alat yang berbeda optimasi dan packing.
 
 ## Dibandingkan dengan estimasi awal
