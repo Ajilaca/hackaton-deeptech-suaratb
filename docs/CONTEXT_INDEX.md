@@ -13,7 +13,7 @@ Baca berurutan: `vault/status-fase.md` -> `vault/spesifikasi.md` -> `vault/keput
 | `vault/model.md` | SATU dokumen model: arsitektur int8, data, pelatihan, kuantisasi, capaian, batasan (hasil negatif) |
 | `vault/verifikasi.md` | Infrastruktur verifikasi Fase 1 |
 | `vault/sintesis.md` | Hasil sintesis Vivado XC7A35T-1 dan Yosys: sumber daya, timing, sapuan P, versi 150 MHz |
-| `result/result.md` | Laporan hasil lengkap (dan `result/result.pdf`) |
+| `result/result.md` | Laporan hasil lengkap (dan `result/report.pdf`) |
 | `vault/anggaran-fase0.md` | Keluaran `golden/analysis/budget.py`: memori, pengali, siklus, muat/tidak per perangkat |
 
 ## Kode

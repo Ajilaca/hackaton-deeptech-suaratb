@@ -4,4 +4,4 @@
 |---|---|
 | `CONTEXT_INDEX.md` | Indeks konteks proyek untuk pembaca baru |
 | `vault/` | Catatan terstruktur (Obsidian): spesifikasi, keputusan, data, model, verifikasi, sintesis, status |
-| `result/` | Laporan hasil lengkap (`result.md`, `result.pdf`) |
+| `result/` | Laporan hasil lengkap (`result.md`, `report.pdf`) |

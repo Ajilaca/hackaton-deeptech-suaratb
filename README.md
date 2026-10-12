@@ -54,13 +54,25 @@ Pada sisi model, hasilnya masih terbatas. CNN yang dilatih dari awal menghasilka
 
 Vivado 2026.1, Artix-7 XC7A35T-1, out-of-context (tanpa I/O dan MMCM), setelah route, constraint 6,667 ns (150 MHz). Satu kali jalan per P, tanpa seed sweep. Sumber: `docs/vault/sintesis.md`.
 
-| P | LUT | FF | DSP48E1 | BRAM tile | WNS | Daya (vectorless, bukan pengukuran) |
+| P | LUT | FF | DSP48E1 | BRAM tile | WNS | Daya (vectorless) |
 |---|---|---|---|---|---|---|
 | 8 | 4.807 (23,1%) | 6.736 (16,2%) | 17 | 12 (24%) | +0,111 ns | 0,168 W |
 | 16 | 5.926 (28,5%) | 7.799 (18,8%) | 17 | 12 (24%) | +0,222 ns | 0,192 W |
 | 32 | 8.120 (39,0%) | 10.071 (24,2%) | 17 | 12 (24%) | +0,023 ns | 0,246 W |
 
 Pada 100 MHz, ketiga nilai P juga memenuhi timing. Clock inti yang dipakai di `target/` adalah 147,456 MHz (K-22).
+
+Latensi inferensi CNN dihitung dari jumlah siklus hasil simulasi dikali periode clock; ini angka turunan, bukan laporan alat.
+Siklus diukur pada versi 100 MHz. Pada versi 150 MHz pipeline menambah sedikit siklus dan belum diukur ulang, sehingga latensi
+pada 150 MHz belum dicantumkan. Sumber: `docs/vault/sintesis.md`.
+
+| P | Siklus inferensi (simulasi) | Latensi @ 100 MHz |
+|---|---|---|
+| 8 | 451.851 | 4,52 ms |
+| 16 | 226.490 | 2,26 ms |
+| 32 | 122.843 | 1,23 ms |
+
+Latensi ini hanya untuk CNN. Waktu yang dirasakan pengguna didominasi pengambilan 0,5 s audio.
 
 ### Model audio
 
@@ -89,7 +101,7 @@ Standar WHO TPP triase tidak dipenuhi (`docs/vault/model.md` §5c).
 | Kesesuaian RTL dengan golden | Bit-exact per modul dan ujung ke ujung, mode dataset dan mikrofon | `docs/vault/verifikasi.md` |
 | Konfigurasi diuji | P = 8, 16, 32; bobot acak terkalibrasi, `model_v2`, dan bobot distilasi | `docs/vault/verifikasi.md`, K-23 |
 
-Laporan lengkap ada di `docs/result/result.md` (dan `result.pdf`).
+Laporan lengkap ada di `docs/result/result.md` (dan `report.pdf`).
 
 ## Keterbatasan
 
