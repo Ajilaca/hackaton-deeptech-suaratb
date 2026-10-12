@@ -214,7 +214,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
 ## K-23 Embedding pralatih: hasil, kriteria distilasi, dan distilasi dicoba (2026-10-12)
 - Uji: HeAR, OPERA-CE, OPERA-CT + LR linear pada 364 peserta (60 positif) dengan protokol tetap (AUROC strat. jenis kelamin, nol
   permutasi dalam klinik x jenis kelamin, statistik maksimum atas tiga kandidat). Angka lengkap: `model.md` §5d.
-- Kriteria distilasi ditetapkan sebelum angka final (docstring `model/permtest.py`): (1) p label disesuaikan < 0,01; (2) p Δ < 0,05
+- Kriteria distilasi ditetapkan sebelum angka final (docstring `model/evaluation/permtest.py`): (1) p label disesuaikan < 0,01; (2) p Δ < 0,05
   DAN batas bawah CI bootstrap Δ > 0; (3) leave-one-clinic-out tidak di bawah p95 nol di kedua arah.
 - Hasil: (1) lolos untuk HeAR (0,002) dan OPERA-CT (0,006); (2) gagal untuk semuanya (p Δ 0,003-0,023 tetapi CI mencakup 0);
   (3) gagal (hasil berbeda antar arah). Kontrol negatif (fitur acak) bersih.

@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
 from model.data import dataset
-from model.tbs_eval import mk, ci, row, participant_table
+from model.evaluation.tbs_eval import mk, ci, row, participant_table
 
 
 def agg(E, ids):

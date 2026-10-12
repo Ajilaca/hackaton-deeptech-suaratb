@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 from golden import paths
-from model import protocol as P
+from model.evaluation import protocol as P
 from model.clinical_models.clinical import lr
 
 warnings.filterwarnings("ignore")

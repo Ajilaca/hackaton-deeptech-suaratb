@@ -124,7 +124,7 @@ def participant_matrix(name: str, u: pd.DataFrame, device: str | None = None) ->
 
 
 def evaluate(models, n_perm=40, reps=10, out=None):
-    from model import protocol as P
+    from model.evaluation import protocol as P
     u = P.universe(); f = P.make_folds(u, reps)
     o = ["# Embedding pralatih (E3) dengan protokol E0", "", f"Semesta {len(u)} peserta, {int(u.y.sum())} positif. Resep OPERA: rekaman utuh, "
          "dirata-rata per peserta. Kriteria sinyal: AUROC strat. > p95 nol dan batas bawah CI Δ > 0.", ""] + P.HEAD + P.reference_rows(u)

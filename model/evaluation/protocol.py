@@ -1,6 +1,6 @@
 """E0: protokol evaluasi tunggal untuk eksperimen audio (embedding pralatih, statistik log-mel, dst.).
 
-    python -m model.protocol --baseline [--perm 40] [--out $SUARATB_DATA/runs/reports/protokol-baseline.md]
+    python -m model.evaluation.protocol --baseline [--perm 40] [--out $SUARATB_DATA/runs/reports/protokol-baseline.md]
 
 Ditetapkan SEBELUM ada angka baru:
   - Unit = peserta. Semesta = peserta berlabel yang punya audio (barcode asli, hasil audit E1). Lipatan 5 x 10 ulangan,
@@ -172,7 +172,7 @@ def main():
     o = ["# Protokol evaluasi audio (E0) dan baseline", "",
          f"Semesta: {len(u)} peserta berlabel dengan audio, {int(u.y.sum())} positif; laki-laki {int(u.sex_m.sum())} "
          f"({int(u[u.sex_m == 1].y.sum())} positif), perempuan {int((1 - u.sex_m).sum())} ({int(u[u.sex_m == 0].y.sum())} positif). "
-         f"Lipatan {K} x {a.reps}, stratifikasi label x klinik x jenis kelamin. Aturan dan metrik: docstring `model/protocol.py`.", ""]
+         f"Lipatan {K} x {a.reps}, stratifikasi label x klinik x jenis kelamin. Aturan dan metrik: docstring `model/evaluation/protocol.py`.", ""]
     o += HEAD
     o += reference_rows(u)
     if a.baseline:

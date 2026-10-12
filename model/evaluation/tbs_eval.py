@@ -1,6 +1,6 @@
 """Langkah 1: evaluasi TBscreen dalam-dataset dan lintas-dataset (Zambia <-> TBscreen) dengan kontrol perancu.
 
-    python -m model.tbs_eval [--out $SUARATB_DATA/runs/reports/tbscreen.md]
+    python -m model.evaluation.tbs_eval [--out $SUARATB_DATA/runs/reports/tbscreen.md]
 
 Fitur peserta (80): rata-rata antar klip dari [mean, std] per band log-mel int8 HANYA pada frame aktif
 (energi hop > puncak/32; sama di kedua dataset). Model: LR (C via CV dalam). Kontrol: cohort (A=rekrutmen TB, C=non-TB),

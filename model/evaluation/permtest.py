@@ -1,8 +1,8 @@
 """Uji permutasi final untuk kandidat embedding (hear, operaCT, operaCE) dengan statistik maksimum.
 
-    python -m model.permtest --kind label --perm 20 --pilot      # pilot: cek kode dan ukur waktu
-    python -m model.permtest --kind label --perm 1000            # H0 (a): audio tidak berhubungan dengan label
-    python -m model.permtest --kind delta --perm 1000            # H0 (b): audio tidak menambah di atas klinis
+    python -m model.evaluation.permtest --kind label --perm 20 --pilot      # pilot: cek kode dan ukur waktu
+    python -m model.evaluation.permtest --kind label --perm 1000            # H0 (a): audio tidak berhubungan dengan label
+    python -m model.evaluation.permtest --kind delta --perm 1000            # H0 (b): audio tidak menambah di atas klinis
 
 PRAREGISTRASI (ditulis 2026-10-11 sebelum angka final; tidak boleh diubah setelah melihat hasil):
   Kandidat: hear, operaCT, operaCE. Semesta = protokol E0 (364 peserta; 60 positif). Pelatih: LR, C = 0,03 tetap (tanpa tuning,
@@ -29,7 +29,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
-from model import protocol as P
+from model.evaluation import protocol as P
 from model.embed_pretrained import participant_matrix
 
 warnings.filterwarnings("ignore")

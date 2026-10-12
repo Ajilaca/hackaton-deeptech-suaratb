@@ -84,7 +84,7 @@ def run(reps: int, epochs: int, n_perm: int, control: str = ""):
     from sklearn.model_selection import StratifiedKFold
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
-    from model import protocol as P
+    from model.evaluation import protocol as P
     torch.set_num_threads(8)
     z = np.load(paths.features_dir() / "distill_clips.npz", allow_pickle=True)
     X, E, B = z["X"], z["emb"], z["barcode"]

@@ -119,7 +119,7 @@ jadi CI sempit; baca sebagai indikasi.
 
 Kesimpulan: sinyal audio lemah (≈ 0,58-0,63) dan tidak naik melewati 0,70 dengan Phone B/C. Pada uji ini jenis kelamin/usia
 tidak dipisahkan; §4 menunjukkan sebagian besar sinyal LR berasal dari keduanya. Tidak ada klaim ketahanan lintas-perangkat.
-Kode: `model/device_eval.py`; berkas laporan lengkap ada di `$SUARATB_DATA/runs/reports/lintas-perangkat.md`.
+Kode: `model/evaluation/device_eval.py`; berkas laporan lengkap ada di `$SUARATB_DATA/runs/reports/lintas-perangkat.md`.
 
 ### 5b. Klinis pada semua peserta berlabel dan manfaat tambahan audio (2026-10-11)
 

@@ -1,6 +1,6 @@
 """Cek lintas-perangkat pada peserta Zambia yang sama: perekam, Phone A, B, C.
 
-    python -m model.device_eval [--out $SUARATB_DATA/runs/reports/lintas-perangkat.md]
+    python -m model.evaluation.device_eval [--out $SUARATB_DATA/runs/reports/lintas-perangkat.md]
 
 Fitur peserta = mean+std log-mel (frame aktif) dari klip batuk perangkat itu; model = LR (C via CV dalam).
 Split 5-lipat PER PESERTA (peserta yang sama di perangkat lain tidak pernah ada di latih dan uji sekaligus).
@@ -17,7 +17,7 @@ from sklearn.model_selection import StratifiedKFold
 from golden import params, paths
 from golden.blocks.cough_det import hop_energy
 from golden.blocks.preemph import preemph
-from model.tbs_eval import clip_vec, mk, ci
+from model.evaluation.tbs_eval import clip_vec, mk, ci
 
 warnings.filterwarnings("ignore")
 

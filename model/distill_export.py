@@ -25,7 +25,7 @@ from golden import paths
 from golden.blocks import cnn as C
 from golden.io_mem import write_mem
 from golden import params
-from model import protocol as P
+from model.evaluation import protocol as P
 from model.scratch import export as EX
 from model.scratch import mil_train as M
 

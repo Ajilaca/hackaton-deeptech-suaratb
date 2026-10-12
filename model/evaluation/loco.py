@@ -1,6 +1,6 @@
 """E4: leave-one-clinic-out terbatas (Kan <-> Cha+Chai) untuk kandidat embedding.
 
-    python -m model.loco [--perm 2000]
+    python -m model.evaluation.loco [--perm 2000]
 
 Latih LR (C = 0,03 tetap, praregistrasi permtest.py) di satu klinik, uji di klinik lain TANPA melihat klinik uji. Metrik: AUROC audio
 terstratifikasi jenis kelamin di klinik uji. Nol: label uji diacak dalam jenis kelamin (model beku, jadi permutasi tepat), p95/p99 dari
@@ -15,7 +15,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
-from model import protocol as P
+from model.evaluation import protocol as P
 from model.embed_pretrained import participant_matrix
 
 warnings.filterwarnings("ignore")

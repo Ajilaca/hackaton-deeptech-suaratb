@@ -1,10 +1,10 @@
 """E4-probe: apakah skor embedding hanya jalan pintas (klinik, jenis kelamin, perangkat)?
 
-    python -m model.probe_shortcut --model hear [--reps 5]
+    python -m model.evaluation.probe_shortcut --model hear [--reps 5]
 
 (1) AUROC skor OOF dalam strata: jenis kelamin, klinik, klinik x jenis kelamin, per perangkat sumber klip.
 (2) Seberapa baik embedding memprediksi jenis kelamin, klinik (Kan vs lain), perangkat, usia (AUROC / korelasi, CV per peserta).
-Memakai lipatan dan skor protokol E0 (model.protocol); tidak ada pemilihan varian.
+Memakai lipatan dan skor protokol E0 (model.evaluation.protocol); tidak ada pemilihan varian.
 """
 from __future__ import annotations
 import argparse
@@ -14,7 +14,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from golden import paths
-from model import protocol as P
+from model.evaluation import protocol as P
 from model.clinical_models.clinical import lr
 from model.embed_pretrained import participant_matrix
 
