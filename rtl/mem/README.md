@@ -10,4 +10,4 @@ terhadap direktori kerja simulator/sintesis.
 | `mel_rom.mem` | `rtl/dsp/mel.sv` |
 | `log_lut.mem` | `rtl/dsp/log_q.sv` |
 
-Bobot CNN tidak ada di sini: dibangkitkan per model oleh `golden/gen_cnn_rom.py` ke `tb/vectors/cnn` atau direktori sintesis.
+Bobot CNN tidak ada di sini: dibangkitkan per model oleh `golden/gen/gen_cnn_rom.py` ke `tb/vectors/cnn` atau direktori sintesis.

@@ -1,4 +1,4 @@
-// Dihasilkan oleh golden/gen_cnn_rom.py dari params.layer_descs() (P=16). JANGAN diedit manual.
+// Dihasilkan oleh golden/gen/gen_cnn_rom.py dari params.layer_descs() (P=16). JANGAN diedit manual.
 package cnn_cfg_pkg;
   localparam int NL = 5;
   localparam int WROM_DEPTH = 921;

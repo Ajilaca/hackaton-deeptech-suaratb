@@ -1,7 +1,7 @@
 """Paket konfigurasi CNN (SystemVerilog) dan ROM bobot/bias/requant yang dikemas untuk P lane.
 
-    python -m golden.gen_cnn_rom --cfg golden/tables/cnn_cfg_pkg.sv          # konfigurasi dari params.layer_descs()
-    python -m golden.gen_cnn_rom --model /data/suaratb/runs/model_v2/qmodel.npz --out <dir>   # ROM dari model terlatih
+    python -m golden.gen.gen_cnn_rom --cfg golden/tables/cnn_cfg_pkg.sv          # konfigurasi dari params.layer_descs()
+    python -m golden.gen.gen_cnn_rom --model /data/suaratb/runs/model_v2/qmodel.npz --out <dir>   # ROM dari model terlatih
 
 ROM bobot  : kata P*8 bit; urutan (layer, grup g, ci, tap); lane l = kanal keluaran g*P+l (0 bila di luar cout).
 ROM bias   : kata P*BIAS_BITS bit; satu kata per (layer, grup).
@@ -13,9 +13,9 @@ from __future__ import annotations
 import argparse
 import pathlib
 import numpy as np
-from . import params
-from .blocks import cnn as C
-from .io_mem import write_mem
+from golden import params
+from golden.blocks import cnn as C
+from golden.gen.io_mem import write_mem
 
 
 def engine_layers(c1=None, c2=None, c3=None, hidden=None):
@@ -58,7 +58,7 @@ def shapes(P: int | None = None, **kw):
 
 def cfg_package(P: int | None = None, name: str = "cnn_cfg_pkg", **kw) -> str:
     L, info = shapes(P, **kw)
-    o = [f"// Dihasilkan oleh golden/gen_cnn_rom.py dari params.layer_descs() (P={info['P']}). JANGAN diedit manual.",
+    o = [f"// Dihasilkan oleh golden/gen/gen_cnn_rom.py dari params.layer_descs() (P={info['P']}). JANGAN diedit manual.",
          f"package {name};"]
     for k, v in info.items():
         o.append(f"  localparam int {k} = {v};")

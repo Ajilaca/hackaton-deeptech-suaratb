@@ -1,6 +1,6 @@
 """Vektor uji per blok (SINTETIS: sinus, derau, impuls, klip batuk-sintetis; model CNN ACAK).
 
-    python -m golden.gen_vectors [--out tb/vectors]
+    python -m golden.gen.gen_vectors [--out tb/vectors]
 
 Tiap blok: <blok>/<kasus>_in.mem, _out.mem, dan meta.json (lebar bit, jumlah kata, parameter).
 Format = .mem hex komplemen-dua, satu kata per baris, siap $readmemh.
@@ -11,20 +11,21 @@ import argparse
 import json
 import pathlib
 import numpy as np
-from . import params, synth
-from .io_mem import write_mem
-from .blocks import frontend as F
-from .blocks.preemph import preemph
-from .blocks.window import apply_window, hamming_q15
-from .blocks.fft512 import fft512
-from .blocks.power import power
-from .blocks.mel import mel_energy
-from .blocks.log_q import log2_q
-from .blocks.quant import quant_feat
-from .blocks import cnn as C
-from .blocks.cough_det import hop_energy, cough_det
+from golden import params
+from golden.gen import synth
+from golden.gen.io_mem import write_mem
+from golden.blocks import frontend as F
+from golden.blocks.preemph import preemph
+from golden.blocks.window import apply_window, hamming_q15
+from golden.blocks.fft512 import fft512
+from golden.blocks.power import power
+from golden.blocks.mel import mel_energy
+from golden.blocks.log_q import log2_q
+from golden.blocks.quant import quant_feat
+from golden.blocks import cnn as C
+from golden.blocks.cough_det import hop_energy, cough_det
 
-DEFAULT_OUT = pathlib.Path(__file__).resolve().parent.parent / "tb" / "vectors"
+DEFAULT_OUT = pathlib.Path(__file__).resolve().parents[2] / "tb" / "vectors"
 
 
 def test_signals():
@@ -116,7 +117,7 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> list[str]:
         write_mem(d / f"{L_.name}_w.mem", L_.w.ravel(), 8)
         write_mem(d / f"{L_.name}_b.mem", L_.b, params.BIAS_BITS)
     write_mem(d / "requant.mem", [v for L_ in model.layers for v in (L_.m0, L_.shift)], 16)
-    from .gen_cnn_rom import write_roms
+    from golden.gen.gen_cnn_rom import write_roms
     write_roms(model, d)                                   # ROM dikemas untuk P lane (cnn_top)
     for case, x in zip(sig, feats):
         write_mem(d / f"{case}_in.mem", x.ravel(), 8)

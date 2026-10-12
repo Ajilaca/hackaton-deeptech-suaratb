@@ -3,8 +3,8 @@ pada t+5/t+6 dan jeda DRAIN antar-stage menghasilkan keluaran yang sama bit-per-
 Mencerminkan: RAM 1R1W read-first (baca mengembalikan data LAMA bila alamat sama), baca a pada t, b pada t+1,
 tulis a' pada t+5 dan b' pada t+6, butterfly berikutnya tiap 2 siklus, DRAIN siklus kosong setelah tiap stage."""
 import numpy as np
-from . import params
-from .blocks.fft512 import fft512, twiddle_q15
+from golden import params
+from golden.blocks.fft512 import fft512, twiddle_q15
 
 W = params.FFT_W
 N = params.NFFT

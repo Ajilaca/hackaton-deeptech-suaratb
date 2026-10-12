@@ -1,11 +1,11 @@
 """Model alamat/urutan modul DSP Fase 3 (Python, bukan simulasi RTL): window (alamat ROM simetris), mel (jalan ROM sparse
 sampai eob), feat_buf (alamat cincin dan urutan baca CNN). Mencerminkan persamaan yang sama dengan RTL."""
 import numpy as np
-from . import params
-from .blocks.window import apply_window, hamming_q15
-from .blocks.mel import mel_energy
-from .blocks.frontend import segment, to_cnn_input
-from .gen_tables import mel_rom_words
+from golden import params
+from golden.blocks.window import apply_window, hamming_q15
+from golden.blocks.mel import mel_energy
+from golden.blocks.frontend import segment, to_cnn_input
+from golden.gen.gen_tables import mel_rom_words
 
 
 def test_window_rom_address_symmetry():

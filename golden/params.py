@@ -2,7 +2,7 @@
 
 Status nilai: lihat CALIBRATION_SOURCE. Selama "synthetic", konstanta yang bergantung
 pada data (MEL_SHIFT, FEAT_*, detektor, requant) adalah PROVISIONAL dan harus
-dihitung ulang dengan `python -m golden.calibrate --data data/raw` begitu dataset ada.
+dihitung ulang dengan `python -m golden.analysis.calibrate --data data/raw` begitu dataset ada.
 Semua keputusan dan alasannya: docs/vault/keputusan.md.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ MEL_SHIFT = 0              # geser kanan akumulator mel sebelum log (K-05: 0 = t
 LOG_IN_BITS = 58           # masukan log2 (K-05): batas atas akumulator mel pada FFT_W=24, tanpa saturasi
 LOG_LUT_BITS = 8           # 256 entri
 LOG_FRAC = 8               # keluaran Q6.8 (6 bit bulat karena leading-one 0..57)
-FEAT_OFFSET = 8265         # dari audio NYATA perekam (golden.calibrate_real, K-14); PROVISIONAL untuk INMP441
+FEAT_OFFSET = 8265         # dari audio NYATA perekam (golden.analysis.calibrate_real, K-14); PROVISIONAL untuk INMP441
 FEAT_SHIFT = 5             # q = sat8(round((L - FEAT_OFFSET) / 2^FEAT_SHIFT)); langkah 0,125 oktaf (0,38 dB)
 
 

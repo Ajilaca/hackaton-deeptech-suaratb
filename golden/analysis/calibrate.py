@@ -1,7 +1,7 @@
 """Fase 0: eksperimen penentuan lebar FFT, skala, ambang detektor, dan konstanta kuantisasi.
 
-    python -m golden.calibrate                 # audio sintetis (default sampai data/raw ada)
-    python -m golden.calibrate --data data/raw # audio nyata (tanpa label: hanya statistik fitur)
+    python -m golden.analysis.calibrate                 # audio sintetis (default sampai data/raw ada)
+    python -m golden.analysis.calibrate --data data/raw # audio nyata (tanpa label: hanya statistik fitur)
 
 Hasil ditulis ke golden/out/phase0_calibration.json (di .gitignore). Tidak mengubah params.py;
 nilai beku disalin manual ke params.py dan dicatat di docs/vault/keputusan.md.
@@ -11,14 +11,15 @@ import argparse
 import json
 import pathlib
 import numpy as np
-from . import params, synth
-from .blocks import frontend as F
-from .blocks.preemph import preemph
-from .blocks.cough_det import hop_energy, cough_det
-from .blocks.fft512 import fft512
-from .blocks.window import apply_window
+from golden import params
+from golden.gen import synth
+from golden.blocks import frontend as F
+from golden.blocks.preemph import preemph
+from golden.blocks.cough_det import hop_energy, cough_det
+from golden.blocks.fft512 import fft512
+from golden.blocks.window import apply_window
 
-OUT = pathlib.Path(__file__).parent / "out"
+OUT = pathlib.Path(__file__).resolve().parents[1] / "out"
 
 
 def load_audio_dir(path: str, limit: int = 200):
@@ -124,7 +125,7 @@ def exp_quant_ranges(clips, W):
 
 def exp_mel_shift(clips, W):
     """Opsi A (Q5.8, masukan 32 bit): kisaran MEL_SHIFT agar tidak saturasi vs lantai tak hilang."""
-    from .blocks.mel import mel_acc
+    from golden.blocks.mel import mel_acc
     peak, floor = 0, None
     for _, sg, x in clips:
         _, i = F.log_mel_q(F.pad_clip(x), W=W, mel_shift=0, with_internal=True)

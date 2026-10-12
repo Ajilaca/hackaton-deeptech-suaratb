@@ -1,7 +1,7 @@
 """Anggaran memori / pengali / siklus untuk konfigurasi (P, C1..C3, FFT_W) dan penilaian muat terhadap perangkat.
 
-    python -m golden.budget                # tabel konfigurasi default + sapuan P
-    python -m golden.budget --json         # keluaran mesin
+    python -m golden.analysis.budget                # tabel konfigurasi default + sapuan P
+    python -m golden.analysis.budget --json         # keluaran mesin
 
 SEMUA angka di sini adalah hitungan ANALITIK dari parameter (bit logis / jumlah pengali /
 siklus ideal). Bukan hasil sintesis. Angka sumber daya nyata hanya dari laporan alat (Fase 6).
@@ -12,7 +12,7 @@ import argparse
 import json
 import math
 from dataclasses import dataclass
-from . import params
+from golden import params
 
 DEVICES_NOTE = "dari ingatan, verifikasi di datasheet"
 # kapasitas: lut (LUT/LE), mem_bits (total bit blok RAM), blk_bits (ukuran satu blok), n_blk,
@@ -86,7 +86,7 @@ def memories(P: int = params.P, W: int = params.FFT_W, c=(params.C1, params.C2, 
     m.append(Mem("fft_ram", params.NFFT * 2 * W, 2 * W, params.NFFT, "RAM"))            # re+im in-place
     m.append(Mem("twiddle_rom", (params.NFFT // 2) * 2 * params.TW_FRAC + (params.NFFT // 2) * 2, 32, params.NFFT // 2, "ROM"))
     m.append(Mem("window_rom", (params.FRAME_LEN // 2) * 16, 16, params.FRAME_LEN // 2, "ROM"))
-    from .gen_tables import mel_rom_words
+    from golden.gen.gen_tables import mel_rom_words
     nmel = len(mel_rom_words())
     m.append(Mem("mel_rom", nmel * 19, 19, nmel, "ROM"))
     m.append(Mem("mel_acc", params.N_MEL * params.MEL_ACC_BITS, params.MEL_ACC_BITS, params.N_MEL, "RAM"))
@@ -124,7 +124,7 @@ def frontend_cycles_per_frame(W: int = params.FFT_W) -> dict:
     """Perkiraan kasar (1 butterfly, 1 butterfly/siklus): FFT (N/2)*log2N + overhead."""
     n = params.NFFT
     fft = (n // 2) * 9 + 9 * 8
-    return dict(fft=fft, window=params.NFFT, power=params.N_BINS, mel=len(__import__("golden.gen_tables", fromlist=["x"]).mel_rom_words()),
+    return dict(fft=fft, window=params.NFFT, power=params.N_BINS, mel=len(__import__("golden.gen.gen_tables", fromlist=["x"]).mel_rom_words()),
                 log=params.N_MEL, total_est=fft + params.NFFT + params.N_BINS + 500 + params.N_MEL * 2)
 
 

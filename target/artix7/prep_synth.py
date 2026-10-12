@@ -8,7 +8,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
-from golden import gen_cnn_rom  # noqa: E402
+from golden.gen import gen_cnn_rom  # noqa: E402
 from golden.blocks import cnn as C  # noqa: E402
 from tb.common.golden_model import random_calibrated_model  # noqa: E402
 

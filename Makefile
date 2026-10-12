@@ -18,20 +18,20 @@ help:
 golden: tables vectors budget
 
 tables:
-	$(PY) -m golden.gen_tables
+	$(PY) -m golden.gen.gen_tables
 	mkdir -p rtl/mem rtl/cnn
 	cp golden/tables/cnn_cfg_pkg.sv rtl/cnn/cnn_cfg_pkg.sv
 	cp golden/tables/suaratb_pkg.sv rtl/common/suaratb_pkg.sv
 	cp golden/tables/*.mem rtl/mem/
 
 vectors:
-	$(PY) -m golden.gen_vectors
+	$(PY) -m golden.gen.gen_vectors
 
 budget:
-	$(PY) -m golden.budget
+	$(PY) -m golden.analysis.budget
 
 calib:
-	$(PY) -m golden.calibrate
+	$(PY) -m golden.analysis.calibrate
 
 test-golden:
 	$(PY) -m pytest golden -q
@@ -40,7 +40,7 @@ lint:
 	verilator --lint-only -Wall -Wno-fatal -Irtl/common -f $(RTL_F) --top-module $(TOP)
 
 test-unit:
-	SIM=$(SIM) $(PY) -m pytest tb/test_$(M).py -q -x
+	SIM=$(SIM) $(PY) -m pytest $$(ls tb/*/test_$(M).py) -q -x
 
 test:
 ifndef FASE_T

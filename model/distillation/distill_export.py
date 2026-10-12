@@ -23,7 +23,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from golden import paths
 from golden.blocks import cnn as C
-from golden.io_mem import write_mem
+from golden.gen.io_mem import write_mem
 from golden import params
 from model.evaluation import protocol as P
 from model.scratch import export as EX
@@ -173,7 +173,7 @@ def final():
 
 
 def vectors(n_clips: int = 8):
-    """Vektor uji RTL: n_clips klip nyata + logit golden dari qmodel terekspor (dipakai tb/test_cnn_trained.py)."""
+    """Vektor uji RTL: n_clips klip nyata + logit golden dari qmodel terekspor (dipakai tb/cnn/test_cnn_trained.py)."""
     out = paths.runs_dir() / "model_distill"
     qm = C.load_qmodel(out / "qmodel.npz")
     z = np.load(paths.features_dir() / "distill_clips.npz", allow_pickle=True)

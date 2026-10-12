@@ -1,6 +1,6 @@
 """Kalibrasi Fase 0 pada klip batuk NYATA (hasil segmentasi detektor golden). Tidak mengubah params.py.
 
-    python -m golden.calibrate_real [--n-rec 150] [--out docs/vault/kalibrasi-data-nyata.md]
+    python -m golden.analysis.calibrate_real [--n-rec 150] [--out docs/vault/kalibrasi-data-nyata.md]
 
 Masukan: $SUARATB_DATA/processed/clips/*/*.npz (dari model.data.prep_audio). Tanpa label klinis di sini;
 AUROC ada di model/scratch/baseline.py. Detektor: tanpa ground truth batuk, hanya statistik laju kejadian.
@@ -10,13 +10,13 @@ import argparse
 import pathlib
 import numpy as np
 import pandas as pd
-from . import params, paths
-from .blocks import frontend as F
-from .blocks.preemph import preemph
-from .blocks.fft512 import fft512
-from .blocks.window import apply_window
-from .blocks.cough_det import cough_det
-from .blocks.mel import mel_acc
+from golden import params, paths
+from golden.blocks import frontend as F
+from golden.blocks.preemph import preemph
+from golden.blocks.fft512 import fft512
+from golden.blocks.window import apply_window
+from golden.blocks.cough_det import cough_det
+from golden.blocks.mel import mel_acc
 
 
 def load_clips(n_rec: int, seed: int = 0):
@@ -120,7 +120,7 @@ def main():
     dr = detector_rates(recs)
     hr = np.concatenate(recs)
     o = ["# Kalibrasi Fase 0 pada audio NYATA (perekam, Zambia CIDRZ)", "",
-         f"Dihasilkan `python -m golden.calibrate_real` dari {len(clips)} klip batuk (hasil detektor golden) pada "
+         f"Dihasilkan `python -m golden.analysis.calibrate_real` dari {len(clips)} klip batuk (hasil detektor golden) pada "
          f"{len(recs)} rekaman unik. **params.py tidak diubah**; angka di bawah adalah masukan keputusan.", "",
          "## Tingkat sinyal",
          f"RMS per hop (LSB int16): p10/p50/p90/p99 = " + "/".join(f"{np.percentile(hr, p):.0f}" for p in (10, 50, 90, 99)),

@@ -1,7 +1,7 @@
 """Menghasilkan tabel ROM (.mem) dan paket SV dari params.py. Tabel diturunkan dari parameter,
 bukan dari data/bobot, sehingga boleh di-commit.
 
-    python -m golden.gen_tables [--out golden/tables]
+    python -m golden.gen.gen_tables [--out golden/tables]
 
 Berkas:
   twiddle_cos.mem / twiddle_sin.mem  256 x 16 bit (Q1.15, W^k = cos - j sin, k=0..255)
@@ -14,14 +14,14 @@ from __future__ import annotations
 import argparse
 import pathlib
 import numpy as np
-from . import params
-from .blocks.fft512 import twiddle_q15
-from .blocks.window import hamming_q15
-from .blocks.mel import mel_sparse
-from .blocks.log_q import log_lut
-from .io_mem import write_mem
+from golden import params
+from golden.blocks.fft512 import twiddle_q15
+from golden.blocks.window import hamming_q15
+from golden.blocks.mel import mel_sparse
+from golden.blocks.log_q import log_lut
+from golden.gen.io_mem import write_mem
 
-DEFAULT_OUT = pathlib.Path(__file__).parent / "tables"
+DEFAULT_OUT = pathlib.Path(__file__).resolve().parents[1] / "tables"
 
 
 def mel_rom_words():
@@ -51,7 +51,7 @@ def main(out: pathlib.Path = DEFAULT_OUT) -> dict:
     write_mem(out / "mel_rom.mem", mw, 19, "{band[5:0], w[11:0], eob}; urut bin 0..256")
     write_mem(out / "log_lut.mem", log_lut(), 8, "round(256*log2(1+(m+0.5)/256)), maks 255")
     (out / "suaratb_pkg.sv").write_text(params.sv_package())
-    from .gen_cnn_rom import cfg_package
+    from golden.gen.gen_cnn_rom import cfg_package
     (out / "cnn_cfg_pkg.sv").write_text(cfg_package())
     return dict(twiddle=len(c), window=len(w) // 2, mel_rom=len(mw), log_lut=256)
 

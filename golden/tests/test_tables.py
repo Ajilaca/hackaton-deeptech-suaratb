@@ -1,6 +1,7 @@
 import numpy as np
-from golden import params, gen_tables, gen_vectors
-from golden.io_mem import read_mem, write_mem
+from golden import params
+from golden.gen import gen_tables, gen_vectors
+from golden.gen.io_mem import read_mem, write_mem
 from golden.blocks.fft512 import twiddle_q15
 from golden.blocks.mel import mel_weights_q
 from golden.blocks.log_q import log_lut

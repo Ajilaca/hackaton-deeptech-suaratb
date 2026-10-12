@@ -1,5 +1,6 @@
 import math
-from golden import params, budget
+from golden import params
+from golden.analysis import budget
 
 
 def test_counts_match_spec():

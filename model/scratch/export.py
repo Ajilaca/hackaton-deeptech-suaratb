@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from golden import params, paths
 from golden.blocks import cnn as C
-from golden.io_mem import write_mem
+from golden.gen.io_mem import write_mem
 from model.scratch import mil_train as M
 
 S_IN = 1.0 / M.SCALE            # real = q * S_IN

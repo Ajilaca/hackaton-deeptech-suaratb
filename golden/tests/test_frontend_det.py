@@ -1,5 +1,6 @@
 import numpy as np
-from golden import params, synth
+from golden import params
+from golden.gen import synth
 from golden.blocks import frontend as F
 from golden.blocks.preemph import preemph
 from golden.blocks.cough_det import hop_energy, cough_det

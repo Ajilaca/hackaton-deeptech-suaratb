@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from golden import params, synth
+from golden import params
+from golden.gen import synth
 from golden.blocks.fixed import rshift_round, sat, bit_length
 from golden.blocks.preemph import preemph
 from golden.blocks.window import hamming_q15, apply_window
