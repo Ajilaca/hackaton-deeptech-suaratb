@@ -1,6 +1,6 @@
 """Butir 1: pengklasifikasi tingkat peserta (akumulator statistik log-mel + regresi logistik) dengan kontrol ketat.
 
-    python -m model.remodel --tag v2 [--perm 30]
+    python -m model.scratch.remodel --tag v2 [--perm 30]
 
 Varian fitur: klip {semua, cough_like} x normalisasi {mentah, kurangi derau pra-onset} x perangkat {semua}.
 C dipilih dengan CV dalam (LogisticRegressionCV). Evaluasi: 5-lipat stratified (klinik x label) x 5 ulangan;

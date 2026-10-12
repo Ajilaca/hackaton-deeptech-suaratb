@@ -1,6 +1,6 @@
 """Baseline CNN FLOAT (arsitektur yang sama dengan golden) + uji sensitivitas lebar FFT, CV 5-lipat per peserta.
 
-    python -m model.baseline [--epochs 20] [--threads 4]
+    python -m model.scratch.baseline [--epochs 20] [--threads 4]
 
 Rezim A: latih pada fitur float-ref, uji pada fitur golden W=24/22/20/18 (sensitivitas lebar FFT).
 Rezim B: latih dan uji pada fitur golden W=24 (baseline yang dapat dipakai).
@@ -118,7 +118,7 @@ def main():
         res[k] = (a_c, a_p, lo, hi, ps.values)
     ref = res[("A", "x_ref")][4]
     o = ["# Baseline float: CV 5-lipat per peserta (audio perekam, Zambia CIDRZ)", "",
-         f"Dihasilkan `python -m model.baseline --epochs {a.epochs}`. {len(y)} klip, {len(pdf)} peserta, "
+         f"Dihasilkan `python -m model.scratch.baseline --epochs {a.epochs}`. {len(y)} klip, {len(pdf)} peserta, "
          f"{int(pdf.y.sum())} positif TB (ground_truth_tb). Label klip = label peserta (lemah). "
          "Skor peserta = rata-rata logit klip. CI 95% bootstrap atas peserta (1000x).", "",
          "| rezim | fitur uji | AUROC klip | AUROC peserta | CI 95% peserta | Δ vs float-ref (peserta, CI 95%) |", "|---|---|---|---|---|---|"]

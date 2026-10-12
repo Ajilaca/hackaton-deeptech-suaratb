@@ -87,7 +87,7 @@ def main():
     F = clin_matrix(meta, parts)
     sym = cv_auc(F, y, folds)
     o = ["# Pelatihan lebih serius: MIL tingkat peserta + fusi gejala klinis", "",
-         f"`python -m model.mil_train` (CV {len(reps)}x5-lipat per peserta, ensemble seed, early stopping pada validasi dalam, "
+         f"`python -m model.scratch.mil_train` (CV {len(reps)}x5-lipat per peserta, ensemble seed, early stopping pada validasi dalam, "
          f"kantong {4} batuk dengan rata-rata logit seperti perangkat; augmentasi gain/geser/SpecAugment) lalu `python -m model.fusion`.",
          f"{len(y)} peserta, {int(y.sum())} positif TB (`ground_truth_tb`). CI 95% bootstrap atas peserta (2.000x).", ""]
     rows = []

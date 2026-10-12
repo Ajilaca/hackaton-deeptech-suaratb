@@ -26,8 +26,8 @@ from golden.blocks import cnn as C
 from golden.io_mem import write_mem
 from golden import params
 from model import protocol as P
-from model import export as EX
-from model import mil_train as M
+from model.scratch import export as EX
+from model.scratch import mil_train as M
 
 warnings.filterwarnings("ignore")
 torch.set_num_threads(8)

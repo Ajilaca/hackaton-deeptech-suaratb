@@ -1,8 +1,8 @@
 """Pelatihan "lebih serius": MIL tingkat peserta (rata-rata logit k batuk, seperti perangkat), augmentasi,
 early stopping pada validasi dalam, ensemble seed, CV 5-lipat berulang per peserta, uji permutasi.
 
-    python -m model.mil_train --tag v2 --repeats 2 --seeds 2 --epochs 30 --threads 4
-    python -m model.mil_train --tag v2 --perm 8 --repeats 1 --seeds 1 --epochs 20 --threads 4 --out runs/mil_perm.npz
+    python -m model.scratch.mil_train --tag v2 --repeats 2 --seeds 2 --epochs 30 --threads 4
+    python -m model.scratch.mil_train --tag v2 --perm 8 --repeats 1 --seeds 1 --epochs 20 --threads 4 --out runs/mil_perm.npz
 
 Label peserta = ground_truth_tb. Gabungan batuk dari semua perangkat peserta membentuk "kantong".
 Keluaran: $SUARATB_DATA/runs/<out>.npz berisi skor peserta per ulangan/perangkat.

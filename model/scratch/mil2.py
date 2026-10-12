@@ -2,7 +2,7 @@
 berisik), tugas bantu (usia/jenis kelamin/HIV/TB sebelumnya/lama batuk/demam/keringat malam/berat badan turun),
 ensemble seed. Arsitektur inferensi identik dengan golden (kepala TB = rata-rata logit klip).
 
-    python -m model.mil2 --tag v2 --aux 1 --reps 2 --seeds 2 --epochs 14 --perm 0 --out mil2_aux1.npz
+    python -m model.scratch.mil2 --tag v2 --aux 1 --reps 2 --seeds 2 --epochs 14 --perm 0 --out mil2_aux1.npz
 """
 from __future__ import annotations
 import argparse
@@ -14,7 +14,7 @@ import torch.nn as nn
 from sklearn.metrics import roc_auc_score
 from golden import paths
 from model.data import dataset
-from model.mil_train import augment, BAG
+from model.scratch.mil_train import augment, BAG
 
 SCALE = 64.0
 AUXC = ["sex_m", "hiv_pos", "prev_tb", "fever", "ngtsweats", "weightloss", "cough_productive", "haemoptysis"]

@@ -3,7 +3,7 @@
     python -m golden.calibrate_real [--n-rec 150] [--out docs/vault/kalibrasi-data-nyata.md]
 
 Masukan: $SUARATB_DATA/processed/clips/*/*.npz (dari model.data.prep_audio). Tanpa label klinis di sini;
-AUROC ada di model/baseline.py. Detektor: tanpa ground truth batuk, hanya statistik laju kejadian.
+AUROC ada di model/scratch/baseline.py. Detektor: tanpa ground truth batuk, hanya statistik laju kejadian.
 """
 from __future__ import annotations
 import argparse

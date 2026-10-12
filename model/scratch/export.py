@@ -1,7 +1,7 @@
 """Fase M: CNN float terlatih -> int8 (PTQ, lalu QAT bila perlu) -> QModel golden + tabel requant + laporan.
 
-    python -m model.export --tag v2 --cv        # evaluasi kuantisasi per lipatan (float vs golden int8)
-    python -m model.export --tag v2 --final     # latih model akhir pada semua peserta dan ekspor bobot
+    python -m model.scratch.export --tag v2 --cv        # evaluasi kuantisasi per lipatan (float vs golden int8)
+    python -m model.scratch.export --tag v2 --final     # latih model akhir pada semua peserta dan ekspor bobot
 
 Aritmatika target = golden/blocks/cnn.py (akumulator 24 bit, requant (acc*M0 + 2^(s-1)) >> s, ReLU+sat [0,127]).
 Bobot hasil ekspor ditulis ke model/out/model_<tag>/ (symlink -> $SUARATB_DATA/runs, di-.gitignore): JANGAN di-commit.
@@ -19,7 +19,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from golden import params, paths
 from golden.blocks import cnn as C
 from golden.io_mem import write_mem
-from model import mil_train as M
+from model.scratch import mil_train as M
 
 S_IN = 1.0 / M.SCALE            # real = q * S_IN
 LOGIT_SCALE = 1.0 / 256.0       # logit int16 = real_logit * 256
@@ -246,7 +246,7 @@ def main():
     a = ap.parse_args()
     torch.set_num_threads(a.threads)
     o = ["# Fase M: model int8 (golden) dan kuantisasi", "",
-         f"`python -m model.export --tag {a.tag}`. Arsitektur = golden (Conv 16/32/32, GAP, FC 32->16->1, 14.496 bobot). "
+         f"`python -m model.scratch.export --tag {a.tag}`. Arsitektur = golden (Conv 16/32/32, GAP, FC 32->16->1, 14.496 bobot). "
          "Bobot terlatih TIDAK di-commit (disimpan di `model/out/model_<tag>/`).", ""]
     if a.cv:
         rows, af, ai, y, sf, si = cv_eval(a)

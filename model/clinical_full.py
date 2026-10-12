@@ -19,7 +19,7 @@ from golden import paths
 from model import fusion
 from model.data import dataset
 from model.clinical import clin_extended, lr, audio_score, boot
-from model.remodel import load, participant_features
+from model.scratch.remodel import load, participant_features
 
 warnings.filterwarnings("ignore")
 

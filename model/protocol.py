@@ -176,7 +176,7 @@ def main():
     o += HEAD
     o += reference_rows(u)
     if a.baseline:
-        from model.remodel import load, participant_features
+        from model.scratch.remodel import load, participant_features
         x, meta, mask, sp = load("v2")
         have = u.barcode.isin(set(sp.barcode))
         us = u[have].reset_index(drop=True)
