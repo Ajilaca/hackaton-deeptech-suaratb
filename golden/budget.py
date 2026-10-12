@@ -27,7 +27,7 @@ DEVICES = {
     "ECP5-25F": dict(lut=24000, mem_bits=1032192, blk_bits=18432, n_blk=56, mult18=56, dsp_a=18, dsp_b=18,
                      fam="ECP5 LFE5U-25 (EBR 18Kb; sysDSP 18x18)"),
 }
-LUT_EST = (4000, 8000)  # CLAUDE.md: estimasi kasar, keyakinan RENDAH (faktor 2). Bukan dari alat.
+LUT_EST = (4000, 8000)  # estimasi awal proyek: estimasi kasar, keyakinan RENDAH (faktor 2). Bukan dari alat.
 
 
 def n_tiles(bits_signed: int, port: int) -> int:

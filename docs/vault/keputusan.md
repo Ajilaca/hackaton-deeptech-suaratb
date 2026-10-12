@@ -14,7 +14,7 @@ Alasan: satu penambah lebar, galat lebih kecil daripada pembulatan ganda. Platea
 dibatasi twiddle Q1.15, bukan lebar data (tabel di `kalibrasi-fase0.md`).
 
 ## K-03 Segmen 50 frame
-CLAUDE.md menyebut "segmen 40x50" dan "45 frame setelah onset". Ditafsirkan 5 frame pre-roll + 45 pasca-onset = 50.
+Spesifikasi awal menyebut "segmen 40x50" dan "45 frame setelah onset". Ditafsirkan 5 frame pre-roll + 45 pasca-onset = 50.
 50 frame membutuhkan 8240 sampel (0,515 s); klip dataset 8000 sampel diberi 240 nol di ekor.
 Risiko: tafsiran ini asumsi; jika bukan itu maksudnya, ubah `PRE_ROLL`/`POST_ONSET`/`N_FRAMES` (CNN mengikuti).
 
@@ -79,7 +79,7 @@ Biaya: window memakai operan 24 bit x 16 bit (1 DSP). Detektor memakai bagian bu
 agar skalanya tak bergantung lebar FFT.
 
 ## K-09 CNN
-Padding "same" nol; MaxPool lantai (25 -> 12, 12 -> 6): peta akhir 5x6, sesuai hitungan 3.698.448 MAC di CLAUDE.md.
+Padding "same" nol; MaxPool lantai (25 -> 12, 12 -> 6): peta akhir 5x6, sesuai hitungan 3.698.448 MAC pada spesifikasi awal.
 ReLU+saturasi [0,127] digabung dengan requant (aktivasi tersembunyi non-negatif). Logit akhir int16 (agar tidak
 kehilangan resolusi untuk rata-rata 3-5 batuk). GAP lewat pengali resiprokal Q15. Bias int32 yang harus muat 24 bit.
 
@@ -97,7 +97,7 @@ Hasil P=16: 282 Kbit, 31 blok pengali, 231.168 siklus. EP4CE6 TIDAK muat konfigu
 Dengan kanal 8/16/16 memori muat (56%) tetapi pengali masih di atas 15 blok keras; perlu pengali di LUT.
 Kapasitas perangkat dari ingatan, belum diverifikasi.
 
-## Perubahan terhadap CLAUDE.md
+## Perubahan terhadap spesifikasi awal
 | Item | Awal | Sekarang |
 |---|---|---|
 | Lebar FFT | 18 (24 bila SNR kurang) | 24 (K-04) |
@@ -194,7 +194,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
 - Catatan: sebagian besar tidak dioptimalkan (tulis requant tidak tumpang-tindih dengan MAC), sumber daya belum diukur.
 
 ## K-21 Target akurasi diganti pelaporan terukur + pembanding WHO TPP (2026-10-11)
-- Alasan: 0,70 (batuk saja) dan 0,80 (fusi) adalah tebakan awal di CLAUDE.md, bukan syarat lomba atau standar medis. Hasil
+- Alasan: 0,70 (batuk saja) dan 0,80 (fusi) adalah tebakan awal pada spesifikasi awal, bukan syarat lomba atau standar medis. Hasil
   terukur: audio 0,52-0,63 (tidak beda dari nol permutasi); klinis 14 fitur 0,772 pada 1.828 peserta (205 positif); tambahan audio
   di atas klinis +0,003 (CI -0,021..+0,026) pada 360 peserta berlaudio; lintas-perangkat dan lintas-dataset 0,50-0,63.
 - Standar pembanding: WHO TPP triase komunitas (sens >= 90%, spes >= 70%). Skor klinis kita: spes 38% pada sens 90%, sens 71% pada

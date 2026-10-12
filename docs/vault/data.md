@@ -8,7 +8,9 @@ Dihasilkan `python -m model.data.describe_data`. Lokasi: `$SUARATB_DATA/raw` (= 
 - Studi: validasi algoritma TB dari X-ray; audio batuk dari 664 peserta (menurut deskripsi) pada 4 perangkat serentak (perekam, Phone A/B/C) di 3 klinik Lusaka (Chainda South, Chawama, Kanyama).
 - Aturan proyek: jangan redistribusi, jangan identifikasi ulang, split per peserta.
 
-## Yang sudah diunduh (WAV)
+## Data yang digunakan (WAV)
+Perekam dan Phone A dari tiga klinik (678 berkas): dasar Fase M dan model CNN dari nol. Embedding HeAR/OPERA juga memakai Phone B/C (lihat Audit cakupan).
+
 | folder | berkas | peserta | jam | sample rate | kanal | GB |
 |---|---|---|---|---|---|---|
 | Audio-Recorder-Chainda-South | 36 | 35 | 0.5 | 44100 | 2 | 0.29 |
@@ -31,7 +33,7 @@ Total berkas WAV: 678; tidak terbaca: 0; tanpa barcode di nama: 14.
 
 ## Catatan kualitas
 - Satu WAV = satu sesi (±40-70 detik di perekam) berisi banyak batuk; 21 peserta punya lebih dari satu rekaman.
-- Beberapa berkas bernama `... (1).wav` (duplikat nama); unduhan via `kaggle -f` gagal untuk sebagian, lihat `scripts/dl_kaggle_phoneA.log`.
+- Beberapa berkas bernama `... (1).wav` (duplikat nama).
 - Positif per klinik sangat tidak seimbang (Chainda South: 1 positif di perekam).
 
 ## Audit cakupan (2026-10-12)

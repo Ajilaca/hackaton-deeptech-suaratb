@@ -165,6 +165,6 @@ Kapasitas perangkat: dari ingatan, verifikasi di datasheet.
 ## Catatan metode
 - Memori = bit logis (kata x lebar); blok dihitung per memori, minimal 1 blok per memori, tanpa memperhitungkan aspek rasio/porting ganda. Bit nyata di sintesis bisa lebih besar.
 - Pengali: hanya blok pengali keras (DSP48E1 25x18 / 18x18) dengan pemecahan operan lebar; pengali 8x8 PE dihitung 1 blok/PE. Mode 9x9 ganda (Cyclone IV, ECP5) atau pengali di LUT tidak dihitung, sehingga EP4CE6 'LEWAT' pada pengali bisa dilonggarkan dengan memindahkan sebagian PE ke LUT.
-- LUT: tidak dihitung dari parameter; memakai estimasi kasar 4-8 rb dari CLAUDE.md (keyakinan rendah, faktor 2).
+- LUT: tidak dihitung dari parameter; memakai estimasi kasar 4-8 rb dari estimasi awal proyek (keyakinan rendah, faktor 2).
 - feat_buf dihitung terpisah dari act_buf_A; menyatukannya (alias) menghemat 16 Kbit.
 - Siklus: ideal output-stationary, tanpa overhead (~+10%); latensi @100/150 MHz adalah TARGET, bukan Fmax terukur.

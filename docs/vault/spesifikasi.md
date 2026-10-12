@@ -47,7 +47,7 @@ selama ≥ 2 frame; segmen = onset-5 .. onset+44; N dibekukan saat merekam; refr
 | Siklus CNN ideal P=8/16/32 | 462.320 / 231.168 / 124.608 | analitik, tanpa overhead |
 | Blok pengali XC7A35T (P=16) | 31 dari 90 | analitik, tanpa sintesis |
 | BRAM36 XC7A35T | ~17 dari 50 | per-memori, estimasi |
-| LUT | 4-8 rb (dari CLAUDE.md) | tebakan, keyakinan rendah |
+| LUT | 4-8 rb (estimasi awal proyek) | tebakan, keyakinan rendah |
 | Fmax | target 100 MHz, tantangan 150 MHz | TERUKUR (Vivado, OOC): 100 MHz terpenuhi; 150 MHz terpenuhi pada versi `optimized` (`sintesis.md`) |
 
 ## Antarmuka sistem (Fase 5, `rtl/sys/`)

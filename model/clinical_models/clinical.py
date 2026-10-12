@@ -143,7 +143,7 @@ def main():
     r2, _ = run({"base": np.column_stack([Fb, fac_oh]), "ext": np.column_stack([Fx, fac_oh])}, A[:, :2], cov, y, strat, 1)
     o += ["", f"Pemeriksaan jalan pintas: klinis14 + kode klinik = {np.mean(r2['klinis14']):.3f} (tanpa: {np.mean(res['klinis14']):.3f}); "
           "kode klinik TIDAK dipakai di model utama karena bukan masukan perangkat dan tidak umum ke lokasi lain.",
-          "", "## Target CLAUDE.md",
+          "", "## Target awal",
           f"- Fusi ≥ 0,80: {'TERCAPAI' if max(np.mean(res[k]) for k in res if k.startswith('fusi')) >= 0.80 else 'belum'} "
           f"(terbaik {max(np.mean(res[k]) for k in res if k.startswith('fusi')):.3f})",
           "- Hasil dalam-dataset, satu sumber; CI lebar (58 positif). Lihat remodel.md untuk perancu jenis kelamin."]

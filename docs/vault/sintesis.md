@@ -92,7 +92,7 @@ Latensi yang dirasakan pengguna tetap didominasi pengambilan 0,5 s audio.
 Yosys memetakan lebih banyak LUT dan DSP daripada Vivado (LUT 1,5-2,4x; DSP 1,9-3,3x) dan lebih sedikit BRAM; angka Yosys bukan
 prediksi Vivado dan tidak memuat timing. Selisih ini wajar untuk dua alat yang berbeda optimasi dan packing.
 
-## Dibandingkan dengan estimasi awal (CLAUDE.md)
+## Dibandingkan dengan estimasi awal
 
 | Besaran | Estimasi | Vivado P=16 |
 |---|---|---|

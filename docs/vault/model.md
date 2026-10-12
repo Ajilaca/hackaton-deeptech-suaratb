@@ -75,8 +75,8 @@ CI 95% bootstrap atas peserta. "Nol" = label diacak dalam klinik dan seluruh pip
 | Klinis diperluas, GBM dangkal | 0,730 | 0,66-0,81 | |
 | **Fusi klinis diperluas + audio** | **0,768** | 0,70-0,84 | Δ vs klinis14 +0,038 (CI -0,005..+0,061); skor audio dihitung di dalam lipatan |
 
-Target di CLAUDE.md: batuk-saja ≥ 0,70 **belum**; fusi ≥ 0,80 **belum** (terbaik 0,768 pada 360 peserta; 0,78 bila klinis
-dilatih pada peserta tanpa audio, §5b). Angka 0,70/0,80 adalah tebakan awal kita (CLAUDE.md "nilai awal"), bukan syarat lomba
+Target awal proyek: batuk-saja ≥ 0,70 **belum**; fusi ≥ 0,80 **belum** (terbaik 0,768 pada 360 peserta; 0,78 bila klinis
+dilatih pada peserta tanpa audio, §5b). Angka 0,70/0,80 adalah tebakan awal kita (spesifikasi awal, "nilai awal"), bukan syarat lomba
 atau standar medis; pembanding klinis yang benar adalah WHO TPP (§5c); penurunan kuantisasi ≤ 0,02 **lulus**;
 HW vs golden bit-exact **lulus** (RTL disimulasikan per modul dan ujung ke ujung dataset + mikrofon, 2026-10-11; regresi penuh Fase T belum).
 

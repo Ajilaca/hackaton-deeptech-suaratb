@@ -5,7 +5,7 @@
 Fitur peserta (80): rata-rata antar klip dari [mean, std] per band log-mel int8 HANYA pada frame aktif
 (energi hop > puncak/32; sama di kedua dataset). Model: LR (C via CV dalam). Kontrol: cohort (A=rekrutmen TB, C=non-TB),
 jenis kelamin, usia; permutasi label dalam cohort; per perangkat; dalam jenis kelamin.
-Klaim yang diperbolehkan: lihat CLAUDE.md (tidak ada klaim klinis/generalisasi).
+Klaim yang diperbolehkan: tidak ada klaim klinis atau generalisasi.
 """
 from __future__ import annotations
 import argparse

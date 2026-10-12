@@ -71,7 +71,6 @@ target/**/work/
 # --- Alat konteks ---
 graphify-out/
 .obsidian/
-.claude/settings.local.json
 
 # --- Sistem ---
 .DS_Store

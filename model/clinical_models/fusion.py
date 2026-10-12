@@ -127,7 +127,7 @@ def main():
         o += ["", "## Uji permutasi (label diacak dalam klinik, seluruh pipeline pelatihan diulang)",
               f"- {len(null)} permutasi: AUROC nol rata-rata {null.mean():.3f}, p95 {np.percentile(null, 95):.3f}, maks {null.max():.3f}",
               f"- AUROC teramati (batuk, semua perangkat): {obs:.3f}; p-empiris ≥ teramati: {(np.sum(null >= obs) + 1) / (len(null) + 1):.3f}"]
-    o += ["", "## Target CLAUDE.md", f"- Batuk saja ≥ 0,70: {'TERCAPAI' if roc_auc_score(y, cough['all']) >= 0.70 else 'belum'}",
+    o += ["", "## Target awal", f"- Batuk saja ≥ 0,70: {'TERCAPAI' if roc_auc_score(y, cough['all']) >= 0.70 else 'belum'}",
           f"- Fusi klinis ≥ 0,80: {'TERCAPAI' if max(r[2] for r in rows if r[0].startswith('Fusi')) >= 0.80 else 'belum'}",
           "", "Catatan: 'gejala saja' bukan hasil perangkat; ia ada untuk melihat nilai tambah audio. Hasil dalam-dataset; tidak ada uji lintas-dataset."]
     pathlib.Path(a.out).parent.mkdir(parents=True, exist_ok=True); pathlib.Path(a.out).write_text("\n".join(o) + "\n")
