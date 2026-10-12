@@ -4,16 +4,16 @@ import os
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 
 def _run_for_p(p: int):
     from golden import params
     from golden.blocks import cnn as C
-    from golden.gen_cnn_rom import cfg_package, write_roms
+    from golden.gen.gen_cnn_rom import cfg_package, write_roms
     from golden.blocks import frontend as F
-    from golden.gen_vectors import test_signals
+    from golden.gen.gen_vectors import test_signals
     from tb.common.runner import run, rtl_files
     tmp = ROOT / "target" / "build" / f"sweep_P{p}"
     (tmp / "tb" / "vectors" / "cnn").mkdir(parents=True, exist_ok=True)

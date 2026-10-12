@@ -1,7 +1,7 @@
-"""Model CNN acak terkalibrasi yang sama dengan golden/gen_vectors.py (bobot ROM tb/vectors/cnn)."""
+"""Model CNN acak terkalibrasi yang sama dengan golden/gen/gen_vectors.py (bobot ROM tb/vectors/cnn)."""
 from golden.blocks import cnn as C
 from golden.blocks import frontend as F
-from golden.gen_vectors import test_signals
+from golden.gen.gen_vectors import test_signals
 
 
 def random_calibrated_model():

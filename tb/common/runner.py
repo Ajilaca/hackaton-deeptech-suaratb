@@ -48,6 +48,10 @@ def run(toplevel: str, test_module: str, parameters: dict | None = None, simulat
     runner.build(sources=sources or rtl_files(sim=sim), hdl_toplevel=toplevel, parameters=parameters,
                  build_dir=str(build_dir), waves=waves, always=True, build_args=args, timescale=("1ns", "1ps"),
                  includes=[str(ROOT / "rtl" / "common")])
-    mod = test_module if "." in test_module else f"tb.{test_module}"
+    if "." in test_module:
+        mod = test_module
+    else:
+        hit = sorted((ROOT / "tb").glob(f"*/{test_module}.py"))
+        mod = f"tb.{hit[0].parent.name}.{test_module}"
     runner.test(hdl_toplevel=toplevel, test_module=mod, test_dir=cwd or str(ROOT), waves=waves,
                 build_dir=str(build_dir), results_xml=str(build_dir / "results.xml"))

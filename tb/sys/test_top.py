@@ -3,7 +3,7 @@ import os
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 import cocotb
 import numpy as np
@@ -134,13 +134,13 @@ async def test_mic(dut):
 def test_runner():
     from tb.common.runner import run
     if MODEL_NAME:
-        from golden.gen_cnn_rom import write_roms
-        tmp = pathlib.Path(__file__).resolve().parents[1] / "target" / "build" / f"top_{MODEL_NAME}"
+        from golden.gen.gen_cnn_rom import write_roms
+        tmp = pathlib.Path(__file__).resolve().parents[2] / "target" / "build" / f"top_{MODEL_NAME}"
         write_roms(get_model(), tmp / "tb" / "vectors" / "cnn")
         (tmp / "rtl").mkdir(parents=True, exist_ok=True)
         link = tmp / "rtl" / "mem"
         if not link.exists():
-            link.symlink_to(pathlib.Path(__file__).resolve().parents[1] / "rtl" / "mem")    # ROM DSP (jalur relatif terhadap cwd)
+            link.symlink_to(pathlib.Path(__file__).resolve().parents[2] / "rtl" / "mem")    # ROM DSP (jalur relatif terhadap cwd)
         run("suaratb_top", "test_top", parameters={"CLK_PER_BIT": CPB, "CLK_PER_BCLK": CPBCLK}, cwd=str(tmp), tag=f"_{MODEL_NAME}")
         return
     run("suaratb_top", "test_top", parameters={"CLK_PER_BIT": CPB, "CLK_PER_BCLK": CPBCLK})

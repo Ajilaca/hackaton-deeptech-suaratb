@@ -1,7 +1,7 @@
 """Pemuat vektor uji (.mem hex komplemen-dua) dan pembanding bit-exact.
 
 Format: satu kata hex per baris; baris yang diawali '//' adalah komentar; lebar kata di meta.json tiap blok.
-Letak : tb/vectors/<blok>/<kasus>_<sufiks>.mem  (dihasilkan golden/gen_vectors.py; sintetis).
+Letak : tb/vectors/<blok>/<kasus>_<sufiks>.mem  (dihasilkan golden/gen/gen_vectors.py; sintetis).
 """
 from __future__ import annotations
 import pathlib

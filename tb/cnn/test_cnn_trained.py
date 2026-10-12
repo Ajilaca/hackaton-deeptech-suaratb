@@ -3,7 +3,7 @@ import os
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import cocotb
@@ -51,7 +51,7 @@ def test_runner():
     if not (model_dir / "qmodel.npz").exists():
         pytest.skip(f"{name} tidak ada")
     from golden.blocks import cnn as C
-    from golden.gen_cnn_rom import write_roms
+    from golden.gen.gen_cnn_rom import write_roms
     from tb.common.runner import run
     tmp = ROOT / "target" / "build" / "trained"
     write_roms(C.load_qmodel(model_dir / "qmodel.npz"), tmp / "tb" / "vectors" / "cnn")
