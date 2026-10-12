@@ -1,6 +1,6 @@
 # golden/tables: tabel dan paket hasil pembangkit
 
-Berkas dihasilkan oleh `golden/gen_tables.py` dan `golden/gen_cnn_rom.py`; **jangan diedit manual**. Salinannya ada di
+Berkas dihasilkan oleh `golden/gen/gen_tables.py` dan `golden/gen/gen_cnn_rom.py`; **jangan diedit manual**. Salinannya ada di
 `rtl/mem` dan `rtl/common`/`rtl/cnn` (lihat `Makefile`, target `tables`).
 
 | Berkas | Isi |

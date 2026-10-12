@@ -166,7 +166,7 @@ FFT_W tetap 24 (pada data nyata W=22 juga lolos ambang K-04, 0,029 oktaf; belum 
   RAM FFT 24 Kbit, RAM fitur 20 Kbit, akumulator mel 40 x 58 bit di register.
 - Verifikasi tanpa simulasi RTL (aturan 3): model Python jadwal FFT (`golden/tests/test_fft_schedule.py`: bit-exact vs golden,
   waktu tulis a'/b', pengalamatan in-place, indeks twiddle, geser stage) dan model alamat window/mel/feat_buf
-  (`golden/tests/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
+  (`golden/tests/test_dsp_addressing.py`). Testbench cocotb ditulis (`tb/dsp/test_{window,fft512,power,mel,log_q,quant,dsp_chain,
   feat_buf}.py`) dan baru dijalankan di Fase T. RTL belum di-lint.
   Pembaruan (K-19): tes unit modul dijalankan 2026-10-11 dan lulus; ini verifikasi per modul, bukan regresi terpadu.
 

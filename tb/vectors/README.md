@@ -1,6 +1,6 @@
 # tb/vectors: vektor uji
 
-Vektor **sintetis** (sinus, derau, impuls, batuk buatan) yang dihasilkan `golden/gen_vectors.py`; tidak berisi audio nyata.
+Vektor **sintetis** (sinus, derau, impuls, batuk buatan) yang dihasilkan `golden/gen/gen_vectors.py`; tidak berisi audio nyata.
 Format `.mem`: satu kata hex komplemen-dua per baris, baris `//` adalah komentar; lebar kata ada di `meta.json` tiap blok.
 
 | Direktori | Blok |

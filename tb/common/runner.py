@@ -1,6 +1,6 @@
 """Pembangun + penjalan cocotb (Verilator atau Icarus) memakai cocotb_tools.runner.
 
-Dipakai oleh tb/test_<modul>.py. Direktori build ada di target/build/<modul> (symlink ke $SUARATB_DATA/build).
+Dipakai oleh tb/<grup>/test_<modul>.py. Direktori build ada di target/build/<modul> (symlink ke $SUARATB_DATA/build).
 HANYA dipanggil di Fase T (make test); Fase 1-5 tidak menjalankannya.
 """
 from __future__ import annotations

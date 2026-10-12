@@ -73,13 +73,13 @@ Cabang git (berantai): `fase0-2` -> `fase3` -> `fase4` -> `fase5` -> `fase6` -> 
 
 ## Fase 3 ditulis (2026-10-11)
 - RTL: `rtl/dsp/{window,fft512,power,mel,log_q,quant,dsp_chain,feat_buf}.sv`; `rtl/files.f` diperbarui.
-- TB: `tb/test_{window,fft512,power,mel,log_q,quant,dsp_chain,feat_buf}.py`, `tb/common/drive.py`; vektor memakai
+- TB: `tb/dsp/test_{window,fft512,power,mel,log_q,quant,dsp_chain,feat_buf}.py`, `tb/common/drive.py`; vektor memakai
   `tb/vectors/{window,fft512,power,mel,log_q,quant,frontend}` (sudah identik dengan keluaran `gen_vectors`).
 - Model Python jadwal/alamat: `golden/tests/test_fft_schedule.py`, `golden/tests/test_dsp_addressing.py` (67 tes golden lulus).
 - Tes unit Fase 2 dan 3 dijalankan (Icarus, K-19): 12 modul LULUS bit-exact terhadap golden. Berikutnya: Fase 4 (CNN, K-17).
 
 ## Fase 4 ditulis dan dites unit (2026-10-11)
-- RTL `rtl/cnn/*.sv`, TB `tb/test_{requant,gap,cnn_top,cnn_sweep,cnn_trained}.py`, generator `golden/gen/gen_cnn_rom.py`.
+- RTL `rtl/cnn/*.sv`, TB `tb/cnn/test_{requant,gap,cnn_top,cnn_sweep,cnn_trained}.py`, generator `golden/gen/gen_cnn_rom.py`.
 - cnn_top bit-exact vs golden (bobot acak, bobot terlatih model_v2, P=8/16/32). Siklus: 451.851 / 226.490 / 122.843.
 - Berikutnya: Fase 5 (top, csr, uart, mode dataset/mikrofon), lalu Fase T dan 6.
 

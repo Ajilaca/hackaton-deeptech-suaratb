@@ -5,7 +5,7 @@ Aturan: Fase 1-5 hanya MENULIS kode. Simulasi dijalankan di Fase T (`make test F
 
 ## Alur
 ```
-golden/ (numpy, bit-exact) --gen_vectors--> tb/vectors/<blok>/<kasus>_<sufiks>.mem --> cocotb tb/test_<modul>.py --> DUT (rtl/)
+golden/ (numpy, bit-exact) --gen_vectors--> tb/vectors/<blok>/<kasus>_<sufiks>.mem --> cocotb tb/<grup>/test_<modul>.py --> DUT (rtl/)
 golden/params.py --gen_tables--> golden/tables/{suaratb_pkg.sv,*.mem} --make tables--> rtl/common/suaratb_pkg.sv, rtl/mem/*.mem
 ```
 
@@ -26,7 +26,7 @@ golden/params.py --gen_tables--> golden/tables/{suaratb_pkg.sv,*.mem} --make tab
 | `tb/common/vec.py` | Muat `.mem`, perbandingan bit-exact, daftar kasus |
 | `tb/common/cocotb_utils.py` | clock/reset, `StreamDriver`, `StreamMonitor` |
 | `tb/common/runner.py` | Build+run cocotb (Verilator/Icarus) ke `target/build/<modul>_<sim>` |
-| `tb/test_<modul>.py` | Satu berkas per modul: tes cocotb + `test_runner()` untuk pytest |
+| `tb/<grup>/test_<modul>.py` | Satu berkas per modul: tes cocotb + `test_runner()` untuk pytest |
 
 ## Konvensi RTL
 - `logic`, `always_ff`, reset aktif-rendah `rst_n`, antarmuka `valid` (stream tanpa backpressure; didokumentasikan di header) atau `valid/ready`.

@@ -26,7 +26,7 @@ Baca berurutan: `vault/status-fase.md` -> `vault/spesifikasi.md` -> `vault/keput
 | `golden/analysis/budget.py` | Anggaran dan penilaian muat |
 | `golden/analysis/calibrate.py` | Eksperimen Fase 0 (`--data data/raw` untuk audio nyata) |
 | `golden/gen/synth.py` | Audio sintetis (bukan klinis) |
-| `golden/test_*.py` | 61 tes pytest |
+| `golden/tests/test_*.py` | 67 tes pytest |
 
 Pemetaan golden -> RTL (Fase 2-5): preemph->`preemph.sv`, window->`window.sv`, fft512->`fft512.sv`, power->`power.sv`,
 mel->`mel.sv`, log_q->`log_q.sv`, quant->`quant.sv`, cough_det->`cough_det.sv`, cnn->`pe_array/cnn_ctrl/requant/gap_fc`.
@@ -38,4 +38,4 @@ mel->`mel.sv`, log_q->`log_q.sv`, quant->`quant.sv`, cough_det->`cough_det.sv`, 
 | `model/{mil_train,fusion,export}.py` | Pelatihan MIL, fusi gejala, PTQ/QAT -> QModel golden |
 | `golden/analysis/calibrate_real.py` | Kalibrasi pada klip nyata |
 | `rtl/common/*`, `rtl/{audio,detect}/*`, `rtl/files.f` | Primitif umum + front-end Fase 2 |
-| `tb/common/*`, `tb/test_*.py`, `Makefile` | Infrastruktur verifikasi (dijalankan di Fase T) |
+| `tb/common/*`, `tb/<grup>/test_*.py`, `Makefile` | Infrastruktur verifikasi (dijalankan di Fase T) |

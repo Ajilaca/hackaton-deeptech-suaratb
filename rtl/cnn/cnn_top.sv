@@ -1,7 +1,7 @@
 // cnn_top: akselerator CNN int8 (conv3x3 x3 + ReLU + MaxPool, GAP, FC 32->16->1), output-stationary, P lane.
 // Fungsi    : memuat 40x50 int8 ke buffer A (ld_*), lalu `start`; mengeluarkan logit int16 (done 1 siklus).
 //             Buffer A/B (ping-pong) berupa RAM inferensi; bobot/bias/requant dari ROM (.mem dikemas P lane).
-// Parameter : INIT_W, INIT_B, INIT_RQ (berkas .mem hasil golden/gen_cnn_rom.py), bentuk layer dari cnn_cfg_pkg
+// Parameter : INIT_W, INIT_B, INIT_RQ (berkas .mem hasil golden/gen/gen_cnn_rom.py), bentuk layer dari cnn_cfg_pkg
 // Antarmuka : ld_valid/ld_addr/ld_q (urutan CNN: addr = mel*50 + frame), start, busy, done, logit
 // Latensi   : ~230 rb siklus pada P=16 (target/estimasi; ukur di Fase T/6)
 // Golden    : golden/blocks/cnn.py : cnn_forward(x, model)

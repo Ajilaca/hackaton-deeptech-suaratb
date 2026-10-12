@@ -5,7 +5,7 @@
 //             OUT_BITS=16, RIGHT_CH (0 = slot WS rendah/kiri)
 // Antarmuka : en (jalankan BCLK/WS), sd (data mikrofon), bclk, ws, sample (bertanda), sample_valid (1 siklus)
 // Latensi   : sample_valid 1 siklus setelah tepi naik BCLK yang mengambil bit terakhir
-// Golden    : tidak ada blok golden; kontrak = sample = word24[23:8] (golden/gen_vectors.py: i2s_rx)
+// Golden    : tidak ada blok golden; kontrak = sample = word24[23:8] (golden/gen/gen_vectors.py: i2s_rx)
 module i2s_rx #(
   parameter int CLK_PER_BCLK = 96,
   parameter int DATA_BITS    = 24,
