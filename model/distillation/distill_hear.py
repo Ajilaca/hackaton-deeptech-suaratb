@@ -1,7 +1,7 @@
 """EKSPLORATORI (K-23 sudah memutuskan distilasi tidak dikejar; ini hanya untuk mengukur): distilasi fitur HeAR -> CNN golden.
 
-    python -m model.distill_hear build            # tabel klip: fitur golden (50x40 int8) + embedding HeAR per klip
-    python -m model.distill_hear run [--reps 2]   # distilasi per lipatan + evaluasi protokol E0 + nol permutasi + banding guru
+    python -m model.distillation.distill_hear build            # tabel klip: fitur golden (50x40 int8) + embedding HeAR per klip
+    python -m model.distillation.distill_hear run [--reps 2]   # distilasi per lipatan + evaluasi protokol E0 + nol permutasi + banding guru
 
 Desain tanpa kebocoran label:
   - Distilasi TIDAK memakai label TB: murid (arsitektur golden: Conv16/32/32 -> GAP32 -> FC32->16 -> kepala 16->K) meregresi K=32

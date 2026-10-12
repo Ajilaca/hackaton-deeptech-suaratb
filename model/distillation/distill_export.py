@@ -1,7 +1,7 @@
 """EKSPLORATORI: murid distilasi HeAR -> kuantisasi int8 golden -> ekspor bobot (tidak menimpa model_v2).
 
-    python -m model.distill_export cv       # per lipatan (ulangan 0 protokol E0): murid float + probe -> PTQ -> golden int8; AUROC float vs int8
-    python -m model.distill_export final    # murid pada SEMUA klip (tanpa label) + probe pada semua peserta -> qmodel + .mem di runs/model_distill
+    python -m model.distillation.distill_export cv       # per lipatan (ulangan 0 protokol E0): murid float + probe -> PTQ -> golden int8; AUROC float vs int8
+    python -m model.distillation.distill_export final    # murid pada SEMUA klip (tanpa label) + probe pada semua peserta -> qmodel + .mem di runs/model_distill
 
 Probe LR (standardisasi + LR) dilipat menjadi FC terakhir 16->1 (w' = w/sigma, b' = b - sum(w*mu/sigma)), sehingga arsitektur hardware
 tidak berubah: logit klip = FC(embedding 16-d), skor peserta = rata-rata logit klip. PTQ saja (tanpa QAT; QAT memakai label).
