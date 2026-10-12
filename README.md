@@ -1,14 +1,10 @@
 # SuaraTB
 
-Suara batuk berpotensi menjadi salah satu sumber informasi untuk skrining tuberkulosis (TBC). Mengenali pola dari audio batuk saja
-belum cukup: modelnya harus diuji pada data yang sesuai, dan implementasinya harus bisa berjalan di perangkat dengan sumber daya
-terbatas.
+Suara batuk berpotensi digunakan sebagai salah satu sumber informasi untuk skrining tuberkulosis (TBC). Namun, membangun model yang bisa mengenali pola dari audio batuk saja tidak cukup. Model tersebut juga perlu diuji pada data yang sesuai, dan implementasinya harus bisa dijalankan pada perangkat dengan sumber daya terbatas.
 
-SuaraTB mengeksplorasi pendekatan itu lewat akselerator FPGA. Audio dari mikrofon I2S diolah menjadi fitur log-mel, lalu CNN int8
-menghitung skor risiko. Seluruh proses berlangsung di perangkat, sehingga audio tidak perlu dikirim ke server. Hardware ditulis dalam
-SystemVerilog, dan model numpy di `golden/` menjadi acuan untuk memeriksa bahwa RTL menghasilkan angka yang persis sama.
+SuaraTB dikembangkan untuk mengeksplorasi pendekatan tersebut melalui akselerator FPGA. Proyek ini menggabungkan pemrosesan audio, ekstraksi fitur log-mel, dan CNN berkuantisasi int8 untuk menghasilkan skor risiko. Implementasi hardware ditulis dalam SystemVerilog, dengan model referensi di `golden/` sebagai acuan untuk memeriksa kesesuaian hasil komputasi RTL.
 
-Proyek ini dibuat untuk Hackathon Deeptech 2026 (Indonesia Chip Hackathon Challenge, ITB/ICDeC) dengan tema *Medical Device*.
+Proyek ini dibuat untuk Hackathon Deeptech 2026 - Indonesia Chip Hackathon Challenge, ITB/ICDeC, dengan tema *Medical Device*.
 
 ## Cara kerja
 
@@ -46,40 +42,52 @@ dengan satu perekam dan tiga ponsel, serta metadata klinis 1.828 peserta (205 po
 mencakup 364 peserta (60 positif). Pembagian data selalu per peserta, bukan per klip. Data, audio, fitur, bobot, dan proyek Vivado
 disimpan di luar repo (`$SUARATB_DATA`, awal `/data/suaratb`).
 
-## Hasil dan evaluasi
+## Hasil dan Evaluasi
 
-Ada dua pertanyaan yang berbeda di sini: apakah hardware bekerja sesuai model referensinya, dan apakah modelnya cukup baik untuk
-membantu skrining. Jawaban pertama positif, jawaban kedua belum. Keberhasilan implementasi hardware tidak otomatis berarti modelnya
-memadai secara klinis.
+Ada dua hal yang perlu dibedakan dalam mengevaluasi SuaraTB: apakah implementasi hardware bekerja sesuai model referensi, dan apakah modelnya cukup baik untuk membantu skrining TBC.
 
-**Hardware.** RTL menghasilkan keluaran yang sama persis dengan golden pada tes per modul dan ujung ke ujung (mode dataset dan
-mikrofon), untuk P = 8, 16, dan 32, termasuk dengan bobot hasil distilasi. Regresi terpadu 20 tes RTL dan 67 tes golden lulus di
-simulator Icarus. Sintesis Vivado untuk Artix-7 XC7A35T-1 memenuhi constraint 6,667 ns (150 MHz) untuk ketiga nilai P, tetapi hanya
-dalam mode out-of-context, satu kali jalan per P tanpa seed sweep, dan margin untuk P = 32 hanya 0,023 ns. Clock inti yang dipakai di
-`target/` adalah 147,456 MHz agar BCLK I2S dan baud UART pas. Semua angka ini berasal dari simulasi dan laporan sintesis.
+Pada sisi hardware, hasil verifikasi menunjukkan bahwa RTL menghasilkan keluaran yang sesuai dengan model referensi pada pengujian yang telah dilakukan. Sintesis untuk target AMD/Xilinx Artix-7 juga menunjukkan bahwa desain dapat mencapai 150 MHz pada konfigurasi yang diuji. Hasil ini berasal dari simulasi dan sintesis, bukan pengujian pada papan FPGA fisik.
+
+Pada sisi model, hasilnya masih terbatas. CNN yang dilatih dari awal menghasilkan AUROC sekitar 0,56, sehingga performanya belum menunjukkan kemampuan diskriminasi yang memadai. Eksperimen menggunakan embedding audio HeAR memberikan hasil yang lebih menjanjikan, tetapi peningkatan performa ketika ditambahkan ke fitur klinis belum meyakinkan. Karena itu, hasil saat ini belum mendukung penggunaan SuaraTB sebagai alat diagnosis maupun klaim bahwa target performa skrining WHO telah terpenuhi.
+
+### Hardware
+
+Vivado 2026.1, Artix-7 XC7A35T-1, out-of-context (tanpa I/O dan MMCM), setelah route, constraint 6,667 ns (150 MHz). Satu kali jalan per P, tanpa seed sweep. Sumber: `docs/vault/sintesis.md`.
+
+| P | LUT | FF | DSP48E1 | BRAM tile | WNS | Daya (vectorless, bukan pengukuran) |
+|---|---|---|---|---|---|---|
+| 8 | 4.807 (23,1%) | 6.736 (16,2%) | 17 | 12 (24%) | +0,111 ns | 0,168 W |
+| 16 | 5.926 (28,5%) | 7.799 (18,8%) | 17 | 12 (24%) | +0,222 ns | 0,192 W |
+| 32 | 8.120 (39,0%) | 10.071 (24,2%) | 17 | 12 (24%) | +0,023 ns | 0,246 W |
+
+Pada 100 MHz, ketiga nilai P juga memenuhi timing. Clock inti yang dipakai di `target/` adalah 147,456 MHz (K-22).
+
+### Model audio
+
+| Model | AUROC | Keterangan | Sumber |
+|---|---|---|---|
+| CNN dilatih dari awal | ~0,56 | Tidak dapat dibedakan dari nol permutasi | `docs/vault/model.md` §4 |
+| Embedding HeAR (364 peserta, 60 positif) | 0,71 | Dalam jenis kelamin; p disesuaikan 0,002; referensi sisi host, tidak berjalan di FPGA | `docs/vault/model.md` §5d |
+| Distilasi HeAR ke CNN golden | 0,654 | Guru 0,672; penurunan kuantisasi int8 0,008; RTL bit-exact; eksploratori | `docs/vault/model.md` §5e |
+| CNN dari awal, kuantisasi int8 | - | Penurunan AUROC 0,001; kriteria <= 0,02 | `docs/vault/model.md` |
+
+### Model klinis
+
+| Model | AUROC | Peserta | Sumber |
+|---|---|---|---|
+| Gejala klinis saja | 0,77 | 1.828 (205 positif) | `docs/vault/model.md` §5b |
+| Tambahan audio HeAR di atas klinis | +0,04 (CI mencakup 0) | 364 (60 positif) | `docs/vault/model.md` §5d |
+
+Standar WHO TPP triase tidak dipenuhi (`docs/vault/model.md` §5c).
+
+### Verifikasi
 
 | Aspek | Hasil | Sumber |
 |---|---|---|
-| Kesesuaian RTL dengan golden | Bit-exact per modul dan ujung ke ujung (dataset dan mikrofon), P = 8/16/32 | `docs/vault/verifikasi.md` |
-| Timing Vivado XC7A35T-1 (OOC) | 100 MHz terpenuhi; 150 MHz terpenuhi untuk P = 8/16/32 (WNS +0,023 s.d. +0,222 ns) | `docs/vault/sintesis.md` |
-| Sumber daya, P = 16 @ 150 MHz | 5.926 LUT (28,5%), 7.799 FF, 17 DSP48E1, 12 tile BRAM, 0,19 W (vectorless) | `docs/vault/sintesis.md` |
-
-**Model.** Pembanding terbaik adalah model gejala klinis (AUROC 0,77), bukan audio. CNN yang dilatih dari nol pada audio hanya
-mencapai AUROC sekitar 0,56 dan tidak dapat dibedakan dari hasil acak. Embedding pralatih HeAR memberi sinyal yang lebih jelas:
-setelah jenis kelamin dikendalikan, AUROC-nya 0,71 dan lolos uji permutasi. Namun tambahan di atas model klinis hanya sekitar +0,04
-dengan interval kepercayaan yang mencakup nol, sehingga manfaat audio di atas gejala klinis belum terbukti, dan hasil lintas klinik
-belum konsisten. HeAR dipakai sebagai referensi di sisi host, bukan di FPGA. Untuk membawa sebagian sinyalnya ke hardware, embedding
-itu didistilasi ke CNN yang arsitekturnya sama dengan golden: AUROC 0,654 (guru 0,672), turun 0,008 setelah kuantisasi int8, dan
-bit-exact di RTL. Hasil distilasi ini eksploratori.
-
-| Aspek | Hasil | Sumber |
-|---|---|---|
-| Gejala klinis saja | AUROC 0,77 (1.828 peserta, 205 positif) | `docs/vault/model.md` §5b |
-| Audio, CNN dilatih dari nol | AUROC ~0,56; tak dapat dibedakan dari nol permutasi | `docs/vault/model.md` §4 |
-| Audio, embedding HeAR (364 peserta, 60 positif) | AUROC 0,71 dalam jenis kelamin, p disesuaikan 0,002; tambahan di atas klinis +0,04 dengan CI mencakup 0 | `docs/vault/model.md` §5d |
-| Distilasi HeAR -> CNN golden | AUROC 0,654 (guru 0,672); RTL bit-exact dengan bobot ini | `docs/vault/model.md` §5e |
-| Kuantisasi int8 | Penurunan AUROC 0,001 (model dari nol), 0,008 (murid distilasi); kriteria <= 0,02 | `docs/vault/model.md` |
-| Standar WHO TPP | Tidak dipenuhi | `docs/vault/model.md` §5c |
+| Tes RTL | 20 tes cocotb lulus, simulator Icarus 12 (regresi 2026-10-12) | `docs/vault/status-fase.md` |
+| Tes golden | 67 tes lulus | `docs/vault/status-fase.md` |
+| Kesesuaian RTL dengan golden | Bit-exact per modul dan ujung ke ujung, mode dataset dan mikrofon | `docs/vault/verifikasi.md` |
+| Konfigurasi diuji | P = 8, 16, 32; bobot acak terkalibrasi, `model_v2`, dan bobot distilasi | `docs/vault/verifikasi.md`, K-23 |
 
 Laporan lengkap ada di `docs/result/result.md` (dan `result.pdf`).
 
