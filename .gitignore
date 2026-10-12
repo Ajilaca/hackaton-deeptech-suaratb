@@ -80,3 +80,4 @@ graphify-out/
 
 clockInfo.txt
 requirements.txt
+docs/result/build_pdf.py
